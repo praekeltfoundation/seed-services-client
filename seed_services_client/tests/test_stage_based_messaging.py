@@ -44,5 +44,3 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://sbm.example.org/api/v1/schedule/")
-
-    
