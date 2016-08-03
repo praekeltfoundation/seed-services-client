@@ -13,7 +13,7 @@ class TestAuthClient(TestCase):
             "token": "3e6de6f2cace86d3ac22d0a58e652f4b283ab58c"
         }
         responses.add(responses.POST,
-                      "http://auth.example.org/user/token/",
+                      "http://auth.example.org/user/tokens/",
                       json=login_response, status=201)
         self.api = AuthApiClient("t@eg.org", "pass", "http://auth.example.org")
 
