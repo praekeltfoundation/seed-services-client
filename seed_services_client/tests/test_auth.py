@@ -43,6 +43,8 @@ class TestAuthClient(TestCase):
         # Execute
         result = self.api.get_permissions()
         # Check
+        self.assertEqual(self.api.token,
+                         "3e6de6f2cace86d3ac22d0a58e652f4b283ab58c")
         self.assertEqual(result["id"], "2")
         self.assertEqual(result["permissions"][0]["type"],
                          "org:admin")

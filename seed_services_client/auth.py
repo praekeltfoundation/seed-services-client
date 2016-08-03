@@ -24,7 +24,8 @@ class AuthApiClient(object):
         # login
         data = {"email": email, "password": password}
         login = session.post('/user/token/', data=data)
-        headers = {'Authorization': 'Token ' + login["token"]}
+        self.token = login["token"]
+        headers = {'Authorization': 'Token %s' % self.token}
         session = JSONServiceClient(url=api_url,
                                     headers=headers)
         self.session = session
