@@ -199,3 +199,81 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://ci.example.org/api/v1/userservicetoken/generate/")  # noqa
+
+    @responses.activate
+    def test_get_user_dashboards(self):
+        # setup
+        search_response = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "user_id": 1,
+                    "dashboards": [
+                        {
+                            "id": 1,
+                            "name": "Overview"
+                        }
+                    ],
+                    "default_dashboard": {
+                        "id": 1,
+                        "name": "Overview"
+                    }
+                }
+            ]
+        }
+        qs = "?user_id=1"
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/userdashboard/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_user_dashboards(user_id=1)
+        # Check
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["results"][0]["user_id"], 1)
+        self.assertEqual(result["results"][0]["dashboards"][0]["id"], 1)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://ci.example.org/api/v1/userdashboard/?user_id=1")  # noqa
+
+    @responses.activate
+    def test_get_dashboard(self):
+        # setup
+        dashboard_response = {
+            "id": 1,
+            "name": "Overview",
+            "widgets": [
+                {
+                    "id": 1,
+                    "title": "Unique Identities Created last 30 days",
+                    "type_of": "last",
+                    "data_from": "-30d",
+                    "interval": "1d",
+                    "nulls": "omit",
+                    "data": [
+                        {
+                            "id": 1,
+                            "title": "Identities Created",
+                            "key": "identities.created.last",
+                            "service": "identity store"
+                        }
+                    ]
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/dashboard/1/",
+                      json=dashboard_response, status=200)
+        # Execute
+        result = self.api.get_dashboard(dashboard=1)
+        # Check
+        self.assertEqual(result["id"], 1)
+        self.assertEqual(result["name"], "Overview")
+        self.assertEqual(result["widgets"][0]["id"], 1)
+        self.assertEqual(result["widgets"][0]["type_of"], "last")
+        self.assertEqual(result["widgets"][0]["data"][0]["id"], 1)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://ci.example.org/api/v1/dashboard/1/")

@@ -42,3 +42,12 @@ class ControlInterfaceApiClient(object):
     def get_service_status(self, service):
         params = {"service": service, "ordering": "-created_at"}
         return self.session.get('/status/', params=params)
+
+    def get_user_dashboards(self, user_id):
+        params = {
+            "user_id": user_id
+        }
+        return self.session.get('/userdashboard/', params=params)
+
+    def get_dashboard(self, dashboard):
+        return self.session.get('/dashboard/%s/' % dashboard)
