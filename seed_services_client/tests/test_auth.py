@@ -85,6 +85,47 @@ class TestAuthClient(TestCase):
         self.assertEqual(responses.calls[0].request.url,
                          "http://auth.example.org/users/")
 
+        @responses.activate
+        def test_get_teams(self):
+            # setup
+            teams_response = [{
+                "id": "1",
+                "title": "Operational Admins",
+                "permissions": [{
+                    "id": "1",
+                    "type": "org:admins",
+                    "object_id": "1",
+                    "namespace": "__auth__"
+                }, {
+                    "id": "2",
+                    "type": "ci:view",
+                    "object_id": None,
+                    "namespace": "__auth__"
+                }],
+                "users": [{
+                    "id": "3",
+                    "url": "http://auth.example.org/users/3/"
+                }],
+                "url": "http://auth.example.org/teams/1/",
+                "organization": {
+                    "id": "1",
+                    "url": "http://auth.example.org/organizations/1/"
+                },
+                "archived": False
+            }]
+            responses.add(responses.GET,
+                          "http://auth.example.org/teams/",
+                          json=teams_response, status=200)
+            # Execute
+            result = self.api.get_teams()
+            # Check
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result["archived"], False)
+            self.assertEqual(result["title"], "Operational Admins")
+            self.assertEqual(len(responses.calls), 1)
+            self.assertEqual(responses.calls[0].request.url,
+                             "http://auth.example.org/teams/")
+
     @responses.activate
     def test_add_user_to_team(self):
         # setup

@@ -36,6 +36,9 @@ class AuthApiClient(object):
     def get_permissions(self):
         return self.session.get('/user/')
 
+    def get_teams(self):
+        return self.session.get('/teams/')
+
     def create_user(self, user):
         return self.session.post('/users/', data=user)
 
