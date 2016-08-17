@@ -51,3 +51,36 @@ class TestAuthClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://auth.example.org/user/")
+
+    @responses.activate
+    def test_create_user(self):
+        # setup
+        user_response = {
+            "id": "3",
+            "url": "http://auth.example.org/users/9/",
+            "first_name": "First",
+            "last_name": "Last",
+            "email": "test@example.com",
+            "admin": False,
+            "teams": [],
+            "organizations": [],
+            "active": True
+        }
+        responses.add(responses.POST,
+                      "http://auth.example.org/users/",
+                      json=user_response, status=200)
+        # Execute
+        user = {
+            "first_name": "First",
+            "last_name": "Last",
+            "email": "test@example.com",
+            "password": "pass",
+            "admin": False
+        }
+        result = self.api.create_user(user)
+        # Check
+        self.assertEqual(result["id"], "3")
+        self.assertEqual(result["organizations"], [])
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://auth.example.org/users/")
