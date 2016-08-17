@@ -84,3 +84,17 @@ class TestAuthClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://auth.example.org/users/")
+
+    @responses.activate
+    def test_add_user_to_team(self):
+        # setup
+        responses.add(responses.PUT,
+                      "http://auth.example.org/teams/2/users/3/", status=204)
+        # Execute
+
+        result = self.api.add_user_to_team(3, 2)
+        # Check
+        self.assertEqual(result, True)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://auth.example.org/teams/2/users/3/")
