@@ -36,3 +36,6 @@ class IdentityStoreApiClient(object):
     def get_identity_by_address(self, address_type, address_value):
         params = {"details__addresses__%s" % address_type: address_value}
         return self.session.get('/identities/search/', params=params)
+
+    def update_identity(self, identity, data=None):
+        return self.session.patch('/identities/%s/' % identity, data=data)
