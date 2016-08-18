@@ -64,3 +64,31 @@ class TestStageBasedMessagingClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://sbm.example.org/api/v1/schedule/1/")
+
+    @responses.activate
+    def test_get_messageset(self):
+        # setup
+        mid = 11
+        messageset = {
+            'id': mid,
+            'short_name': "short_name",
+            'notes': None,
+            'next_set': 10,
+            'default_schedule': 1,
+            'content_type': 'text',
+            'created_at': "2016-06-22T06:13:29.693272Z",
+            'updated_at': "2016-06-22T06:13:29.693272Z"
+        }
+        responses.add(
+            responses.GET,
+            "http://sbm.example.org/api/v1/messageset/%s/" % mid,
+            json=messageset, status=200
+        )
+        # Execute
+        result = self.api.get_messageset(mid)
+        # Check
+        self.assertEqual(result["id"], 11)
+        self.assertEqual(result["short_name"], "short_name")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://sbm.example.org/api/v1/messageset/11/")
