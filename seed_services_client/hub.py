@@ -28,5 +28,8 @@ class HubApiClient(object):
         'created_after' """
         return self.session.get('/registrations/', params=params)
 
+    def get_registration(self, registration):
+        return self.session.get('/registrations/%s/' % registration)
+
     def create_registration(self, registration):
         return self.session.post('/registration/', data=registration)
