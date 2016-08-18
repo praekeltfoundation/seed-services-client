@@ -37,6 +37,9 @@ class StageBasedMessagingApiClient(object):
     def get_messageset(self, messageset_id):
         return self.session.get('/messageset/%s/' % messageset_id)
 
+    def get_subscriptions(self, params=None):
+        return self.session.get('/subscriptions/', params=params)
+
     def get_messages(self, params=None):
         return self.session.get('/message/', params=params)
 
