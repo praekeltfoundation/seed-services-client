@@ -28,8 +28,17 @@ class StageBasedMessagingApiClient(object):
     def get_schedules(self, params=None):
         return self.session.get('/schedule/', params=params)
 
+    def get_schedule(self, schedule_id):
+        return self.session.get('/schedule/%s/' % schedule_id)
+
     def get_messagesets(self, params=None):
         return self.session.get('/messageset/', params=params)
+
+    def get_messageset(self, messageset_id):
+        return self.session.get('/messageset/%s/' % messageset_id)
+
+    def get_subscriptions(self, params=None):
+        return self.session.get('/subscriptions/', params=params)
 
     def get_messages(self, params=None):
         return self.session.get('/message/', params=params)
@@ -48,3 +57,7 @@ class StageBasedMessagingApiClient(object):
 
     def create_binarycontent(self, content):
         return self.session_http.post('/binarycontent/', files=content).json()
+
+    def update_subscription(self, subscription, data=None):
+        return self.session.patch('/subscriptions/%s/' % subscription,
+                                  data=data)
