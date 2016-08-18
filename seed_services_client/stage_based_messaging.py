@@ -28,6 +28,9 @@ class StageBasedMessagingApiClient(object):
     def get_schedules(self, params=None):
         return self.session.get('/schedule/', params=params)
 
+    def get_schedule(self, schedule_id):
+        return self.session.get('/schedule/%s/' % schedule_id)
+
     def get_messagesets(self, params=None):
         return self.session.get('/messageset/', params=params)
 

@@ -5,7 +5,7 @@ from seed_services_client.stage_based_messaging \
     import StageBasedMessagingApiClient
 
 
-class TestIdentityStoreClient(TestCase):
+class TestStageBasedMessagingClient(TestCase):
 
     def setUp(self):
         self.api = StageBasedMessagingApiClient(
@@ -44,3 +44,23 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://sbm.example.org/api/v1/schedule/")
+
+    @responses.activate
+    def test_get_schedule(self):
+        # setup
+        sid = 1
+        response = {
+            "id": sid, "minute": "0", "hour": "8", "day_of_week": "1",
+            "day_of_month": "*", "month_of_year": "*"
+        }
+        responses.add(responses.GET,
+                      "http://sbm.example.org/api/v1/schedule/%s/" % sid,
+                      json=response, status=200)
+        # Execute
+        result = self.api.get_schedule(sid)
+        # Check
+        self.assertEqual(result["id"], 1)
+        self.assertEqual(result["day_of_week"], "1")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://sbm.example.org/api/v1/schedule/1/")
