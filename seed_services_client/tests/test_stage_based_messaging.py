@@ -153,3 +153,39 @@ class TestStageBasedMessagingClient(TestCase):
         self.assertEqual(result["results"][1]["id"], subscription_id_2)
         self.assertEqual(result["results"][1]["active"], True)
         self.assertEqual(len(responses.calls), 1)
+
+    @responses.activate
+    def test_update_subscription(self):
+        # Setup
+        registrant_id = "4275a063-3129-45ac-853b-0d64aaefd8c5"
+        subscription_id = "subscription1-4bf1-8779-c47b428e89d0"
+        response = {
+            "id": subscription_id,
+            "identity": registrant_id,
+            "active": False,
+            "completed": False,
+            "lang": "eng_ZA",
+            "url": "http://sbm/api/v1/subscriptions/%s" % subscription_id,
+            "messageset": 11,
+            "next_sequence_number": 11,
+            "schedule": 101,
+            "process_status": 0,
+            "version": 1,
+            "metadata": {},
+            "created_at": "2015-07-10T06:13:29.693272Z",
+            "updated_at": "2015-07-10T06:13:29.693272Z"
+        }
+        responses.add(responses.PATCH,
+                      "http://sbm.example.org/api/v1/subscriptions/%s/" % subscription_id,  # noqa
+                      json=response, status=200)
+        data = {
+            "active": False
+        }
+        # Execute
+        result = self.api.update_subscription(subscription_id, data)
+        # Check
+        self.assertEqual(result["id"], subscription_id)
+        self.assertEqual(result["active"], False)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://sbm.example.org/api/v1/subscriptions/%s/" % subscription_id)  # noqa

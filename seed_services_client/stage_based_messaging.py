@@ -57,3 +57,7 @@ class StageBasedMessagingApiClient(object):
 
     def create_binarycontent(self, content):
         return self.session_http.post('/binarycontent/', files=content).json()
+
+    def update_subscription(self, subscription, data=None):
+        return self.session.patch('/subscriptions/%s/' % subscription,
+                                  data=data)
