@@ -4,7 +4,7 @@ import responses
 from seed_services_client.control_interface import ControlInterfaceApiClient
 
 
-class TestIdentityStoreClient(TestCase):
+class TestControlInterfaceClient(TestCase):
 
     def setUp(self):
         self.api = ControlInterfaceApiClient("NO",
@@ -174,8 +174,6 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(result["results"][0]["up"], True)
         self.assertEqual(result["results"][1]["up"], False)
         self.assertEqual(len(responses.calls), 1)
-        self.assertEqual(responses.calls[0].request.url,
-                         "http://ci.example.org/api/v1/status/?ordering=-created_at&service=serviceuuid")  # noqa
 
     @responses.activate
     def test_generate_user_service_tokens(self):
