@@ -33,3 +33,16 @@ class HubApiClient(object):
 
     def create_registration(self, registration):
         return self.session.post('/registration/', data=registration)
+
+    def get_changes(self, params=None):
+        """
+        Filter params can include
+        'action', 'mother_id', 'validated', 'source', 'created_before'
+        'created_after' """
+        return self.session.get('/changes/', params=params)
+
+    def get_change(self, change):
+        return self.session.get('/changes/%s/' % change)
+
+    def create_change(self, change):
+        return self.session.post('/change/', data=change)

@@ -162,3 +162,109 @@ class TestHubClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://hub.example.org/api/v1/registration/")
+
+    @responses.activate
+    def test_get_changes(self):
+        # setup
+        search_response = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": "7bfffecf-abe8-4302-bd91-fd617e1c592e",
+                    "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+                    "action": "change_messaging",
+                    "data": {
+                        "msg_type": "audio",
+                        "voice_days": "tue_thu",
+                        "voice_times": "9_11"
+                    },
+                    "source": 1
+                }
+            ]
+        }
+        qs = "?mother_id=846877e6-afaa-43de-acb1-09f61ad4de99"
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/changes/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_changes(params={
+            "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99"})
+        # Check
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["results"][0]["action"], "change_messaging")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://hub.example.org/api/v1/changes/?mother_id=846877e6-afaa-43de-acb1-09f61ad4de99")  # noqa
+
+    @responses.activate
+    def test_get_change(self):
+        # setup
+        change_response = {
+            "id": "7bfffecf-abe8-4302-bd91-fd617e1c592e",
+            "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+            "action": "change_messaging",
+            "data": {
+                "msg_type": "audio",
+                "voice_days": "tue_thu",
+                "voice_times": "9_11"
+            },
+            "source": 1,
+            "created_at": "2016-08-03T19:39:26.464102Z",
+            "updated_at": "2016-08-03T19:39:26.464152Z",
+            "created_by": 1,
+            "updated_by": 1
+        }
+        reg = "7bfffecf-abe8-4302-bd91-fd617e1c592e"
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/changes/%s/" % reg,
+                      json=change_response, status=200)
+        # Execute
+        result = self.api.get_change(
+            "7bfffecf-abe8-4302-bd91-fd617e1c592e")
+        # Check
+        self.assertEqual(result["action"], "change_messaging")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://hub.example.org/api/v1/changes/7bfffecf-abe8-4302-bd91-fd617e1c592e/")  # noqa
+
+    @responses.activate
+    def test_create_change(self):
+        # setup
+        post_response = {
+            "id": "7bfffecf-abe8-4302-bd91-fd617e1c592e",
+            "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+            "action": "change_messaging",
+            "data": {
+                "msg_type": "audio",
+                "voice_days": "tue_thu",
+                "voice_times": "9_11"
+            },
+            "source": 1,
+            "created_at": "2016-08-03T19:39:26.464102Z",
+            "updated_at": "2016-08-03T19:39:26.464152Z",
+            "created_by": 1,
+            "updated_by": 1
+        }
+        responses.add(responses.POST,
+                      "http://hub.example.org/api/v1/change/",
+                      json=post_response, status=201)
+        # Execute
+        change = {
+            "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+            "action": "change_messaging",
+            "data": {
+                "msg_type": "audio",
+                "voice_days": "tue_thu",
+                "voice_times": "9_11"
+            }
+        }
+        result = self.api.create_change(change)
+        # Check
+        self.assertEqual(result["action"], "change_messaging")
+        self.assertEqual(result["source"], 1)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://hub.example.org/api/v1/change/")
