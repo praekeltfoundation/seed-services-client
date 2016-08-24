@@ -7,7 +7,7 @@ from .control_interface import ControlInterfaceApiClient
 from .hub import HubApiClient
 from .message_sender import MessageSenderApiClient
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 __all__ = [
     'IdentityStoreApiClient', 'StageBasedMessagingApiClient', 'AuthApiClient',
