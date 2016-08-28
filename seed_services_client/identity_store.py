@@ -24,6 +24,12 @@ class IdentityStoreApiClient(object):
     def get_identities(self, params=None):
         return self.session.get('/identities/', params=params)
 
+    def search_identities(self, field, value):
+        # this is used for searching 'details' field to avoid DRF lacks
+        # use "details__preferred_language" for example field
+        params = {field: value}
+        return self.session.get('/identities/search/', params=params)
+
     def get_identity(self, identity):
         # return None on 404 becuase that means an identity not found
         self.session.is_acceptable = \

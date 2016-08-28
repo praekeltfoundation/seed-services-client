@@ -48,6 +48,45 @@ class TestIdentityStoreClient(TestCase):
                         "http://id.example.org/api/v1/identities/search/?details__addresses__msisdn=%2B27001")  # noqa
 
     @responses.activate
+    def test_details_search(self):
+        # setup
+        search_response = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": "0c03d360-1180-4fb4-9eed-ecd2cff8fa05",
+                    "version": 1,
+                    "details": {
+                        "preferred_language": "eng_ZA",
+                        "default_addr_type": "msisdn",
+                        "addresses": {
+                          "msisdn": {
+                              "+27123": {}
+                          }
+                        }
+                    }
+                }
+            ]
+        }
+        qs = "?details__preferred_language=eng_ZA"
+        responses.add(responses.GET,
+                      "http://id.example.org/api/v1/identities/search/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.search_identities("details__preferred_language",
+                                            "eng_ZA")
+        # Check
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["results"][0]["id"],
+                         "0c03d360-1180-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://id.example.org/api/v1/identities/search/?details__preferred_language=eng_ZA")  # noqa
+
+    @responses.activate
     def test_identity_search_no_results(self):
         # setup
         search_response = {
