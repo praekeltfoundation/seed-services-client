@@ -1,88 +1,60 @@
-
-"""
-Client for Service Rating Store HTTP services APIs.
-
-"""
-import requests
-import json
+from demands import JSONServiceClient, HTTPServiceClient
 
 
 class ServiceRatingApiClient(object):
-
     """
-    Client for ServiceRating API.
+    Client for Service Rating Service.
 
-    :param str api_token:
-
-        An API Token.
+    :param str auth_token:
+        An access token.
 
     :param str api_url:
-        The full URL of the API. Defaults to
-        ``http://seed-service-rating/api/v1``.
+        The full URL of the API.
 
     """
 
-    def __init__(self, api_token, api_url=None, session=None):
-        if api_url is None:
-            api_url = "http://seed-service-rating/api/v1"
-        self.api_url = api_url
-        self.headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Token %s' % api_token
-        }
+    def __init__(self, auth_token, api_url, session=None, session_http=None):
         if session is None:
-            session = requests.Session()
-        session.headers.update(self.headers)
-        self.session = session
+            session = JSONServiceClient(
+                url=api_url, headers={'Authorization': 'Token ' + auth_token})
 
-    def call(self, endpoint, method, obj=None, params=None, data=None):
-        if obj is None:
-            url = '%s/%s/' % (self.api_url.rstrip('/'), endpoint)
-        else:
-            url = '%s/%s/%s/' % (self.api_url.rstrip('/'), endpoint, obj)
-        result = {
-            'get': self.session.get,
-            'post': self.session.post,
-            'patch': self.session.patch,
-            'delete': self.session.delete,
-        }.get(method, None)(url, params=params, data=json.dumps(data))
-        result.raise_for_status()
-        if method is "delete":  # DELETE returns blank body
-            return {"success": True}
-        else:
-            return result.json()
+        if session_http is None:
+            session_http = HTTPServiceClient(
+                url=api_url, headers={'Authorization': 'Token ' + auth_token})
+        self.session = session
+        self.session_http = session_http
 
     # Invites
     def get_invites(self, params=None):
-        return self.call('invite', 'get', params=params)
+        return self.session.get('/invite/', params=params)
 
     def get_invite(self, invite_id):
-        return self.call('invite', 'get', obj=invite_id)
+        return self.session.get('/invite/%s/' % invite_id)
 
     def create_invite(self, invite):
-        return self.call('invite', 'post', data=invite)
+        return self.session.post('/invite/', data=invite)
 
-    def update_invite(self, invite_id, invite):
-        return self.call('invite', 'patch', obj=invite_id,
-                         data=invite)
+    def update_invite(self, invite_id, data=None):
+        return self.session.patch('/invite/%s/' % invite_id, data=data)
 
     def delete_invite(self, invite_id):
         # Ratings should be deleted first for FK reasons
-        return self.call('invite', 'delete', obj=invite_id)
+        self.session.delete('/invite/%s/' % invite_id)
+        return {"success": True}
 
     # Ratings
     def get_ratings(self, params=None):
-        return self.call('rating', 'get', params=params)
+        return self.session.get('/rating/', params=params)
 
     def get_rating(self, rating_id):
-        return self.call('rating', 'get', obj=rating_id)
+        return self.session.get('/rating/%s/' % rating_id)
 
     def create_rating(self, rating):
-        return self.call('rating', 'post', data=rating)
+        return self.session.post('/rating/', data=rating)
 
-    def update_rating(self, rating_id, rating):
-        return self.call('rating', 'patch', obj=rating_id,
-                         data=rating)
+    def update_rating(self, rating_id, data=None):
+        return self.session.patch('/rating/%s/' % rating_id, data=data)
 
     def delete_rating(self, rating_id):
-        return self.call('rating', 'delete', obj=rating_id)
+        self.session.delete('/rating/%s/' % rating_id)
+        return {"success": True}
