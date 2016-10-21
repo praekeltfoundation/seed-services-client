@@ -45,3 +45,6 @@ class IdentityStoreApiClient(object):
 
     def update_identity(self, identity, data=None):
         return self.session.patch('/identities/%s/' % identity, data=data)
+
+    def create_identity(self, identity):
+        return self.session.post('/identities/', data=identity)
