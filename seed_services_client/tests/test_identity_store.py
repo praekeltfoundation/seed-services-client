@@ -272,3 +272,36 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://id.example.org/api/v1/identities/%s/" % uid)
+
+    @responses.activate
+    def test_create_identity(self):
+        # Setup
+        identity = {
+            "id": "4275a063-3129-45ac-853b-0d64aaefd8c5",
+            "version": 1,
+            "details": {
+                "default_addr_type": "msisdn",
+                "addresses": {
+                    "msisdn": {
+                        "+26773000000": {}
+                    }
+                },
+                "risk": "high"
+            },
+            "communicate_through": None,
+            "operator": None,
+            "created_at": "2016-04-21T09:11:05.725680Z",
+            "created_by": 2,
+            "updated_at": "2016-06-15T15:09:05.333526Z",
+            "updated_by": 2
+        }
+        responses.add(responses.POST,
+                      "http://id.example.org/api/v1/identities/",
+                      json=identity, status=201)
+
+        # Execute
+        self.api.create_identity(identity)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://id.example.org/api/v1/identities/")
