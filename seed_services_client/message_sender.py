@@ -27,3 +27,6 @@ class MessageSenderApiClient(object):
 
     def create_outbound(self, payload):
         return self.session.post('/outbound/', data=payload)
+
+    def get_outbounds(self, params=None):
+        return self.session.get('/outbound/', params=params)

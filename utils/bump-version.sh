@@ -16,5 +16,6 @@ function inplace_sed {
   rm "$2$suffix"
 }
 
+echo "${VER}" > VERSION
 inplace_sed "s/\(version[ ]*=[ ]*[\"']\)\(.*\)\([\"'].*\)/\1${VER}\3/" setup.py
 inplace_sed "s/^\(__version__[ ]*=[ ]*[\"']\)\(.*\)\([\"'].*\)/\1${VER}\3/" seed_services_client/__init__.py
