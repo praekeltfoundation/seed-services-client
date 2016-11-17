@@ -275,3 +275,24 @@ class TestControlInterfaceClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://ci.example.org/api/v1/dashboard/1/")
+
+    @responses.activate
+    def test_get_definition_page(self):
+        # setup
+        definition_page_response = {
+            "id": 1,
+            "title": "Overview",
+            "description": "Overview_Description"
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/definition/1/",
+                      json=definition_page_response, status=200)
+        # Execute
+        result = self.api.get_definition_page(definition=1)
+        # Check
+        self.assertEqual(result["id"], 1)
+        self.assertEqual(result["title"], "Overview")
+        self.assertEqual(result["description"], "Overview_Description")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://ci.example.org/api/v1/definition/1/")
