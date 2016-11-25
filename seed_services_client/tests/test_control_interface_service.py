@@ -1,14 +1,13 @@
 from unittest import TestCase
 import responses
 
-from seed_services_client.control_interface_service\
-    import ControlInterfaceServiceApiClient
+from seed_services_client.control_interface import ControlInterfaceApiClient
 
 
 class TestControlInterfaceServiceClient(TestCase):
 
     def setUp(self):
-        self.api = ControlInterfaceServiceApiClient(
+        self.api = ControlInterfaceApiClient(
             "NO", "http://ci-service.example.org/api/v1")
 
     @responses.activate
