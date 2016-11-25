@@ -64,16 +64,16 @@ class TestControlInterfaceServiceClient(TestCase):
             "updated_by": 1
         }
         responses.add(responses.GET,
-                      "http://ci-service.example.org/api/v1/definition/ba79f008-cc34-437e-ba6a-02b3c2e5fc9e/", # noqa
+                      "http://ci-service.example.org/api/v1/definition/ba79f008-cc34-437e-ba6a-02b3c2e5fc9e/",  # noqa
                       json=definition_response, status=200)
         # Execute
-        result = self.api.get_definition("ba79f008-cc34-437e-ba6a-02b3c2e5fc9e") # noqa
+        result = self.api.get_definition("ba79f008-cc34-437e-ba6a-02b3c2e5fc9e")  # noqa
         # Check
         self.assertEqual(result["title"], "test title 1")
         self.assertEqual(result["description"], "test desc 1")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
-                         "http://ci-service.example.org/api/v1/definition/ba79f008-cc34-437e-ba6a-02b3c2e5fc9e/") # noqa
+                         "http://ci-service.example.org/api/v1/definition/ba79f008-cc34-437e-ba6a-02b3c2e5fc9e/")  # noqa
 
     @responses.activate
     def test_update_definition(self):
@@ -89,7 +89,7 @@ class TestControlInterfaceServiceClient(TestCase):
             "updated_by": 1
         }
         responses.add(responses.PATCH,
-                      "http://ci-service.example.org/api/v1/definition/%s/" % uid, # noqa
+                      "http://ci-service.example.org/api/v1/definition/%s/" % uid,  # noqa
                       json=response, status=200)
         data = {
             "title": "updated title 1"
@@ -102,7 +102,7 @@ class TestControlInterfaceServiceClient(TestCase):
         self.assertEqual(result["title"], "updated title 1")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
-                         "http://ci-service.example.org/api/v1/definition/%s/" % uid) # noqa
+                         "http://ci-service.example.org/api/v1/definition/%s/" % uid)  # noqa
 
     @responses.activate
     def test_create_definition(self):
