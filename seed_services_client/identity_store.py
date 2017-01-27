@@ -54,3 +54,6 @@ class IdentityStoreApiClient(object):
 
     def create_optout(self, optout):
         return self.session.post('/optout/', data=optout)
+
+    def create_optin(self, optin):
+        return self.session.post('/optin/', data=optin)

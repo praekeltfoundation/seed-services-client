@@ -363,3 +363,26 @@ class TestIdentityStoreClient(TestCase):
             responses.calls[0].request.url,
             "http://id.example.org/api/v1/optout/"
         )
+
+    @responses.activate
+    def test_create_optin(self):
+        optin = {
+            "id": "ba27bb4e-49a3-49cd-81a4-9f6af7380cbf",
+            "identity": "46f61a96-d54f-4eda-8250-e5bb86be2580",
+            "address_type": "msisdn",
+            "address": "+1234",
+            "request_source": "Test source",
+            "requestor_source_id": "1",
+            "created_at": "2017-01-27T10:41:38.924319Z"
+        }
+        responses.add(
+            responses.POST,
+            'http://id.example.org/api/v1/optin/',
+            json=optin, status=201)
+
+        self.api.create_optin(optin)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            'http://id.example.org/api/v1/optin/'
+        )
