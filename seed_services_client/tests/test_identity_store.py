@@ -305,3 +305,35 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(
             responses.calls[0].request.url,
             "http://id.example.org/api/v1/identities/")
+
+    @responses.activate
+    def test_get_optouts(self):
+        optouts = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": "e5210c99-8d8a-40f1-8e7f-8a66c4de9e29",
+                    "optout_type": "stop",
+                    "identity": "8311c23d-f3c4-4cab-9e20-5208d77dcd1b",
+                    "address_type": "msisdn",
+                    "address": "+1234",
+                    "request_source": "testsource",
+                    "requestor_source_id": "1",
+                    "reason": "Test reason",
+                    "created_at": "2017-01-27T10:00:06.354178Z"
+                },
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://id.example.org/api/v1/optouts/search/?optout_type=stop",
+            json=optouts, match_querystring=True)
+
+        res = self.api.get_optouts(params={'optout_type': 'stop'})
+        self.assertEqual(res, optouts)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://id.example.org/api/v1/optouts/search/?optout_type=stop")
