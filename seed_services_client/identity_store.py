@@ -51,3 +51,6 @@ class IdentityStoreApiClient(object):
 
     def get_optouts(self, params=None):
         return self.session.get('/optouts/search/', params=params)
+
+    def create_optout(self, optout):
+        return self.session.post('/optout/', data=optout)
