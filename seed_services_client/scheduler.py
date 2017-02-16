@@ -68,3 +68,6 @@ class SchedulerApiClient(object):
     def delete_schedule(self, schedule_id):
         # Schedule messages must all be deleted first for FK reasons
         return self.call('schedule', 'delete', obj=schedule_id)
+
+    def get_failed_tasks(self, params=None):
+        return self.call('failed-tasks', 'get', params=params)
