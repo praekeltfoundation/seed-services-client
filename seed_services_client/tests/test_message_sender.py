@@ -46,3 +46,31 @@ class TestMessageSenderClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://ms.example.org/api/v1/outbound/")
+
+    @responses.activate
+    def test_get_outbounds(self):
+        outbounds = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {'to_addr': 'addr', 'content': 'content'},
+            ]
+        }
+
+        responses.add(
+            responses.GET,
+            "http://ms.example.org/api/v1/outbound/",
+            json=outbounds,
+            status=200, content_type='application/json',
+        )
+        # Execute
+        result = self.api.get_outbounds()
+
+        # Check
+        self.assertEqual(result, outbounds)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://ms.example.org/api/v1/outbound/"
+        )
