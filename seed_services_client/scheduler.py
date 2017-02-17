@@ -71,3 +71,6 @@ class SchedulerApiClient(object):
 
     def get_failed_tasks(self, params=None):
         return self.call('failed-tasks', 'get', params=params)
+
+    def requeue_failed_tasks(self):
+        return self.call('failed-tasks', 'post', data={})

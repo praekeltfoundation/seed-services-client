@@ -33,3 +33,6 @@ class MessageSenderApiClient(object):
 
     def get_failed_tasks(self, params=None):
         return self.session.get('/failed-tasks/', params=params)
+
+    def requeue_failed_tasks(self):
+        return self.session.post('/failed-tasks/')
