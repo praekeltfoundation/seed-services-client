@@ -268,3 +268,25 @@ class TestHubClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://hub.example.org/api/v1/change/")
+
+    @responses.activate
+    def test_trigger_report_generation(self):
+        # setup
+        post_response = {"report_generation_requested": True}
+        responses.add(responses.POST,
+                      "http://hub.example.org/api/v1/reports/",
+                      json=post_response, status=202)
+        # Execute
+        data = {
+            'output_file': "tempfile.name",
+            'start_date': '2016:01:01',
+            'end_date': '2016:02:01',
+            'email_to': ['foo@example.com'],
+            'email_subject': 'The Email Subject'
+        }
+        result = self.api.trigger_report_generation(data)
+        # Check
+        self.assertEqual(result, {"report_generation_requested": True})
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://hub.example.org/api/v1/reports/")
