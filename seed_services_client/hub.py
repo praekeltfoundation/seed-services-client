@@ -46,3 +46,8 @@ class HubApiClient(object):
 
     def create_change(self, change):
         return self.session.post('/change/', data=change)
+
+    def trigger_report_generation(self, params=None):
+        """
+        Calls the Hub endpoint for generating reports """
+        return self.session.post('/reports/', data=params)
