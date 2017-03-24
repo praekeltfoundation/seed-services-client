@@ -263,7 +263,6 @@ class TestIdentityStoreClient(TestCase):
         }
         # Execute
         result = self.api.update_identity(uid, data)
-        print(result)
         # Check
         self.assertEqual(result["id"], uid)
         self.assertEqual(result["version"], 1)
