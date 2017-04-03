@@ -65,6 +65,9 @@ class StageBasedMessagingApiClient(object):
         return self.session.patch('/subscriptions/%s/' % subscription,
                                   data=data)
 
+    def create_subscription(self, subscription):
+        return self.session.post('/subscriptions/', data=subscription)
+
     def get_failed_tasks(self, params=None):
         return self.session.get('/failed-tasks/', params=params)
 
