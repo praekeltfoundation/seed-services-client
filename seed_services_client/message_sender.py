@@ -27,3 +27,18 @@ class MessageSenderApiClient(object):
 
     def create_outbound(self, payload):
         return self.session.post('/outbound/', data=payload)
+
+    def get_outbounds(self, params=None):
+        return self.session.get('/outbound/', params=params)
+
+    def create_inbound(self, payload):
+        return self.session.post('/inbound/', data=payload)
+
+    def get_inbounds(self, params=None):
+        return self.session.get('/inbound/', params=params)
+
+    def get_failed_tasks(self, params=None):
+        return self.session.get('/failed-tasks/', params=params)
+
+    def requeue_failed_tasks(self):
+        return self.session.post('/failed-tasks/')
