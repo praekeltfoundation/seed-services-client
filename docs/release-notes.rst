@@ -14,3 +14,11 @@ v0.17.0
  - Features
     - Add create inbound function for message store client
     - Add list inbound function for message store client
+
+v0.18.0
+-------
+
+*4 April 2017*
+
+- Features
+    - Add create subscription function for stage based messaging client
