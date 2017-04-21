@@ -51,3 +51,19 @@ class ControlInterfaceApiClient(object):
 
     def get_dashboard(self, dashboard):
         return self.session.get('/dashboard/%s/' % dashboard)
+
+    def get_definitions(self, params=None):
+        return self.session.get('/definition/', params=params)
+
+    def get_definition(self, definition):
+        return self.session.get('/definition/%s/' % definition)
+
+    def update_definition(self, definition, data=None):
+        return self.session.patch('/definition/%s/' % definition, data=data)
+
+    def create_definition(self, definition):
+        return self.session.post('/definition/', data=definition)
+
+    def delete_definition(self, definition):
+        self.session.delete('/definition/%s/' % definition)
+        return {"success": True}
