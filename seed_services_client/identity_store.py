@@ -32,9 +32,8 @@ class IdentityStoreApiClient(object):
 
     def get_identity(self, identity):
         # return None on 404 becuase that means an identity not found
-        self.session.is_acceptable = \
-            lambda response, request_params: response.status_code in [404, 200]
-        result = self.session.get('/identities/%s/' % identity)
+        result = self.session.get('/identities/%s/' % identity,
+                                  expected_response_codes=[404, 200])
         if "detail" in result and result["detail"] == "Not found.":
             return None
         return result
