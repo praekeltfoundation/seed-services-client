@@ -29,9 +29,8 @@ class ControlInterfaceApiClient(object):
 
     def get_service(self, service):
         # return None on 404 becuase that means a service not found
-        self.session.is_acceptable = \
-            lambda response, request_params: response.status_code in [404, 200]
-        result = self.session.get('/service/%s/' % service)
+        result = self.session.get('/service/%s/' % service,
+                                  expected_response_codes=[404, 200])
         if "detail" in result and result["detail"] == "Not found.":
             return None
         return result
