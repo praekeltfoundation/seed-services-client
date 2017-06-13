@@ -51,3 +51,8 @@ class HubApiClient(object):
         """
         Calls the Hub endpoint for generating reports """
         return self.session.post('/reports/', data=params)
+
+    def create_optout_admin(self, optout):
+        """
+        Calls the hub endpoint for a optout from admin apps"""
+        return self.session.post('/optout_admin/', data=optout)
