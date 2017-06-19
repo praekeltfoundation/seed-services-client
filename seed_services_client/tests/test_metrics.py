@@ -30,7 +30,7 @@ class TestMetricsApiClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         request = responses.calls[0].request
         _, auth = request.headers['Authorization'].split()
-        user, pass_ = b64decode(auth).split(':')
+        user, pass_ = b64decode(auth.encode()).decode().split(':')
         self.assertEqual(user, 'user')
         self.assertEqual(pass_, 'pass')
 
@@ -58,6 +58,6 @@ class TestMetricsApiClient(TestCase):
         })
         request = responses.calls[0].request
         _, auth = request.headers['Authorization'].split()
-        user, pass_ = b64decode(auth).split(':')
+        user, pass_ = b64decode(auth.encode()).decode().split(':')
         self.assertEqual(user, 'user')
         self.assertEqual(pass_, 'pass')
