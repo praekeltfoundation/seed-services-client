@@ -94,6 +94,30 @@ class TestStageBasedMessagingClient(TestCase):
                          "http://sbm.example.org/api/v1/messageset/11/")
 
     @responses.activate
+    def test_messageset_languages(self):
+        # Setup
+        data = {
+            "1": ["afr", "eng"],
+            "2": ["afr", "eng", "zul"]
+        }
+
+        responses.add(
+            responses.GET,
+            "http://sbm.example.org/api/v1/messageset_languages/",
+            json=data,
+            status=200
+        )
+
+        # Execute
+        result = self.api.get_messageset_languages()
+
+        # Check
+        self.assertEqual(result, data)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://sbm.example.org/api/v1/messageset_languages/")
+
+    @responses.activate
     def test_get_subscriptions(self):
         # Setup
         registrant_id = "4275a063-3129-45ac-853b-0d64aaefd8c5"
