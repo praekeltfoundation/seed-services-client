@@ -311,3 +311,26 @@ class TestHubClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://hub.example.org/api/v1/optout_admin/")
+
+    @responses.activate
+    def test_trigger_change_admin(self):
+        # Setup
+        post_response = {"identity": "identity-1234"}
+        responses.add(responses.POST,
+                      "http://hub.example.org/api/v1/change_admin/",
+                      json=post_response, status=200)
+
+        # Execute
+        data = {
+            "identity": "identity-1234",
+            "subscription": "subscription-1234",
+            "language": "eng_ZA"
+        }
+
+        result = self.api.create_change_admin(data)
+
+        # Check
+        self.assertEqual(result, post_response)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://hub.example.org/api/v1/change_admin/")
