@@ -41,6 +41,18 @@ class IdentityStoreApiClient(SeedServicesApiClient):
         params = {"details__addresses__%s" % address_type: address_value}
         return self.session.get('/identities/search/', params=params)
 
+    def get_identity_address(self, identity_id, address_type='msisdn'):
+        params = {'default': True}
+
+        response = self.session.get(
+            '/identities/{0}/addresses/{1}'.format(identity_id, address_type),
+            params=params)
+
+        if len(response["results"]) > 0:
+            return response["results"][0]["address"]
+        else:
+            return None
+
     def update_identity(self, identity, data=None):
         return self.session.patch('/identities/%s/' % identity, data=data)
 
