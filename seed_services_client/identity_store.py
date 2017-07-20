@@ -6,11 +6,13 @@ class IdentityStoreApiClient(object):
     Client for Identity Store Service.
 
     :param str auth_token:
-
         An access token.
 
     :param str api_url:
         The full URL of the API.
+
+    :param JSONServiceClient session:
+        An instance of JSONServiceClient to use
 
     """
 
