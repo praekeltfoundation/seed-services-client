@@ -1,7 +1,7 @@
-from demands import JSONServiceClient
+from .seed_services import SeedServicesApiClient
 
 
-class IdentityStoreApiClient(object):
+class IdentityStoreApiClient(SeedServicesApiClient):
     """
     Client for Identity Store Service.
 
@@ -16,12 +16,9 @@ class IdentityStoreApiClient(object):
 
     """
 
-    def __init__(self, auth_token, api_url, session=None):
-        headers = {'Authorization': 'Token ' + auth_token}
-        if session is None:
-            session = JSONServiceClient(url=api_url,
-                                        headers=headers)
-        self.session = session
+    def __init__(self, auth_token, api_url, session=None, **kwargs):
+        super(IdentityStoreApiClient, self).__init__(
+            auth_token, api_url, session=session, **kwargs)
 
     def get_identities(self, params=None):
         return self.session.get('/identities/', params=params)
