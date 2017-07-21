@@ -34,6 +34,10 @@ class HubApiClient(object):
     def create_registration(self, registration):
         return self.session.post('/registration/', data=registration)
 
+    def update_registration(self, registration, data=None):
+        return self.session.patch('/registration/%s/' % registration,
+                                  data=data)
+
     def get_changes(self, params=None):
         """
         Filter params can include
