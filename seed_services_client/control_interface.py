@@ -50,3 +50,6 @@ class ControlInterfaceApiClient(object):
 
     def get_dashboard(self, dashboard):
         return self.session.get('/dashboard/%s/' % dashboard)
+
+    def get_definition_page(self, definition):
+        return self.session.get('/definition/%s/' % definition)
