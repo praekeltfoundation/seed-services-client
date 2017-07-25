@@ -15,20 +15,20 @@ class SeedServicesApiClient(object):
     :param JSONServiceClient session:
         An instance of JSONServiceClient to use
 
-    :param bool retry:
-        Boolean indicating whether failed requests should be retried
+    :param retries:
+        (optional) The number of times to retry an HTTP request
 
     """
 
-    def __init__(self, auth_token, api_url, session=None, retry=False):
+    def __init__(self, auth_token, api_url, session=None, retries=0):
         headers = {'Authorization': 'Token ' + auth_token}
         if session is None:
             session = JSONServiceClient(url=api_url,
                                         headers=headers)
         self.session = session
 
-        if retry:
-            http = HTTPAdapter(max_retries=5)
-            https = HTTPAdapter(max_retries=5)
+        if retries > 0:
+            http = HTTPAdapter(max_retries=retries)
+            https = HTTPAdapter(max_retries=retries)
             self.session.mount('http://', http)
             self.session.mount('https://', https)
