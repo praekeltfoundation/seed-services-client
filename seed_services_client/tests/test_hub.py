@@ -164,6 +164,53 @@ class TestHubClient(TestCase):
                          "http://hub.example.org/api/v1/registration/")
 
     @responses.activate
+    def test_update_registration(self):
+        # setup
+        uid = "7bfffecf-abe8-4302-bd91-fd617e1c592e"
+        response = {
+            "id": uid,
+            "stage": "prebirth",
+            "mother_id": "5cc97b85-c73c-46e3-8a14-df065727b582",
+            "validated": True,
+            "data": {
+                "surname": "the builder",
+                "last_period_date": "20160202",
+                "operator_id": "hcw00001-63e2-4acc-9b94-26663b9bc267",
+                "mama_name": "sue",
+                "mama_id_no": "12345",
+                "hoh_id": "hoh00001-63e2-4acc-9b94-26663b9bc267",
+                "msg_type": "text",
+                "mama_surname": "zin",
+                "msg_receiver": "head_of_household",
+                "hoh_name": "bob",
+                "language": "eng_UG",
+                "mama_id_type": "ugandan_id",
+                "receiver_id": "hoh00001-63e2-4acc-9b94-26663b9bc267"
+            },
+            "source": 1,
+            "created_at": "2016-08-03T19:39:26.464102Z",
+            "updated_at": "2016-08-03T19:39:26.464152Z",
+            "created_by": 1,
+            "updated_by": 1
+        }
+        responses.add(responses.PATCH,
+                      "http://hub.example.org/api/v1/registration/%s/" % uid,
+                      json=response, status=200)
+        # Execute
+        registration = {
+            "data": {
+                "surname": "the builder",
+            }
+        }
+        result = self.api.update_registration(uid, registration)
+        # Check
+        self.assertEqual(result["data"]['surname'], "the builder")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://hub.example.org/api/v1/registration/%s/" % uid)
+
+    @responses.activate
     def test_get_changes(self):
         # setup
         search_response = {
