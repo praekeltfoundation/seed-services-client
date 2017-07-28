@@ -3,6 +3,17 @@
 Release Notes
 =============
 
+v0.25.0
+-------
+
+*28 July 2017*
+
+- Features
+
+    + ``IdentityStoreApiClient`` can be given an integer parameter
+      ``retries`` when being initialized to indicate the number of
+      times an HTTP request should be retried.
+
 v0.17.0
 -------
 .. Pull request #24
