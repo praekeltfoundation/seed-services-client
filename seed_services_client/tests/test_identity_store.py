@@ -1,13 +1,25 @@
+from mock import patch
 from unittest import TestCase
 import responses
 
 from seed_services_client.identity_store import IdentityStoreApiClient
+from seed_services_client.seed_services import SeedServicesApiClient
 
 
 class TestIdentityStoreClient(TestCase):
 
     def setUp(self):
         self.api = IdentityStoreApiClient("NO", "http://id.example.org/api/v1")
+
+    @patch("seed_services_client.seed_services.SeedServicesApiClient.__init__")
+    def test_inherited_from_base_api_class(self, mock_parent_init):
+        self.assertTrue(
+            issubclass(IdentityStoreApiClient, SeedServicesApiClient))
+
+        IdentityStoreApiClient(
+            'token', 'http://api/', session='session', argument=True)
+        mock_parent_init.assert_called_with(
+            'token', 'http://api/', session='session', argument=True)
 
     @responses.activate
     def test_identity_search(self):
