@@ -177,6 +177,39 @@ class TestIdentityStoreClient(TestCase):
                          "http://id.example.org/api/v1/identities/%s/" % uid)
 
     @responses.activate
+    def test_get_identity_address(self):
+        # Setup
+        uid = 'uid'
+        url = ('http://id.example.org/api/v1/identities/{0}'
+               '/addresses/msisdn?default=True').format(uid)
+        addresses_msisdn_response = {'results': [
+            {'address': '+27000000000'},
+            {'address': '+27000000001'},
+        ]}
+        responses.add(responses.GET, url,
+                      json=addresses_msisdn_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_identity_address(identity_id=uid)
+        # Check
+        self.assertEqual(result, '+27000000000')
+
+    @responses.activate
+    def test_get_identity_address_no_results(self):
+        # Setup
+        uid = 'uid'
+        url = ('http://id.example.org/api/v1/identities/{0}'
+               '/addresses/msisdn?default=True').format(uid)
+        addresses_msisdn_response = {'results': []}
+        responses.add(responses.GET, url,
+                      json=addresses_msisdn_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_identity_address(identity_id=uid)
+        # Check
+        self.assertEqual(result, None)
+
+    @responses.activate
     def test_identity_list_no_results(self):
         # setup
         response = {
