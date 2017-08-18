@@ -9,7 +9,7 @@ from .message_sender import MessageSenderApiClient
 from .scheduler import SchedulerApiClient
 from .service_rating import ServiceRatingApiClient
 
-__version__ = "0.26.0"
+__version__ = "0.27.0"
 
 __all__ = [
     'IdentityStoreApiClient', 'StageBasedMessagingApiClient', 'AuthApiClient',
