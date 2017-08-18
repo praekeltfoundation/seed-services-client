@@ -65,3 +65,6 @@ class HubApiClient(object):
         """
         Calls the hub endpoint for a change from admin apps"""
         return self.session.post('/change_admin/', data=change)
+
+    def get_report_tasks(self, params=None):
+        return self.session.get('/reporttasks/', params=params)
