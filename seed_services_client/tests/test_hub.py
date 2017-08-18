@@ -381,3 +381,37 @@ class TestHubClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://hub.example.org/api/v1/change_admin/")
+
+    @responses.activate
+    def test_get_report_tasks(self):
+        # setup
+        search_response = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    'status': 'Pending',
+                    'end_date': '2016-02-01 00:00:00+00:00',
+                    'created_at': '2017-08-16T09:35:15.940212Z',
+                    'file_size': None,
+                    'updated_at': '2017-08-16T09:35:15.940227Z',
+                    'error': None,
+                    'email_subject': 'The Email Subject',
+                    'start_date': '2016-01-01 00:00:00+00:00'
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/reporttasks/",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_report_tasks()
+
+        # Check
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["results"][0]["status"], "Pending")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://hub.example.org/api/v1/reporttasks/")
