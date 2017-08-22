@@ -1,4 +1,4 @@
-from demands import JSONServiceClient
+from demands import HTTPServiceClient, JSONServiceClient
 from requests.adapters import HTTPAdapter
 
 
@@ -29,6 +29,9 @@ class SeedServicesApiClient(object):
     :param JSONServiceClient session:
         An instance of JSONServiceClient to use
 
+    :param HTTPServiceClient session_https:
+        An instance of HTTPServiceClient to use
+
     :param retries:
         (optional) The number of times to retry an HTTP request
 
@@ -38,14 +41,21 @@ class SeedServicesApiClient(object):
 
     """
 
-    def __init__(self, auth_token, api_url, session=None, retries=0,
-                 timeout=65):
+    def __init__(self, auth_token, api_url, session=None, session_http=None,
+                 retries=0, timeout=65):
 
         headers = {'Authorization': 'Token ' + auth_token}
+
         if session is None:
             session = JSONServiceClient(url=api_url,
                                         headers=headers)
         self.session = session
+
+        if session_http is None:
+            session_http = HTTPServiceClient(url=api_url,
+                                             headers=headers)
+
+        self.session_http = session_http
 
         http_adapter_kwargs = {}
 
