@@ -1,4 +1,4 @@
-from demands import JSONServiceClient, HTTPServiceClient
+from demands import JSONServiceClient
 
 
 class MessageSenderApiClient(object):
@@ -14,16 +14,12 @@ class MessageSenderApiClient(object):
 
     """
 
-    def __init__(self, auth_token, api_url, session=None, session_http=None):
+    def __init__(self, auth_token, api_url, session=None):
         if session is None:
             session = JSONServiceClient(
                 url=api_url, headers={'Authorization': 'Token ' + auth_token})
 
-        if session_http is None:
-            session_http = HTTPServiceClient(
-                url=api_url, headers={'Authorization': 'Token ' + auth_token})
         self.session = session
-        self.session_http = session_http
 
     def create_outbound(self, payload):
         return self.session.post('/outbound/', data=payload)
