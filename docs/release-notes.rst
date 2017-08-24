@@ -3,6 +3,18 @@
 Release Notes
 =============
 
+v0.28.0
+-------
+
+*24 August 2017*
+
+- Features
+
+    + New `timeout` parameter for setting HTTP timeouts, defaults
+      to 65 seconds
+    + ``StageBasedMessagingApiClient`` and ``MessageSenderApiClient``
+      inherit from the base class so that they support retrying requests
+
 v0.25.0
 -------
 
