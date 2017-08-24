@@ -19,9 +19,9 @@ class TestSeedHTTPAdapter(TestCase):
 class TestSeedServicesApiClient(TestCase):
 
     @patch("seed_services_client.seed_services.SeedHTTPAdapter")
-    def test_timeout_not_passed_by_default(self, patch_adapter):
+    def test_timeout_default_if_unset(self, patch_adapter):
         self.api = SeedServicesApiClient("token", "http://api/")
-        patch_adapter.assert_called_with()
+        patch_adapter.assert_called_with(timeout=65)
 
     @patch("seed_services_client.seed_services.SeedHTTPAdapter")
     def test_timeout_passed_if_set(self, patch_adapter):

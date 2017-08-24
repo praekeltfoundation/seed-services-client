@@ -33,12 +33,13 @@ class SeedServicesApiClient(object):
         (optional) The number of times to retry an HTTP request
 
     :param timeout:
-        (optional) The number of times to retry an HTTP request
+        (optional) The number of seconds for a request to timeout,
+        defaults to 65 seconds
 
     """
 
     def __init__(self, auth_token, api_url, session=None, retries=0,
-                 timeout=None):
+                 timeout=65):
 
         headers = {'Authorization': 'Token ' + auth_token}
         if session is None:
