@@ -210,6 +210,22 @@ class TestIdentityStoreClient(TestCase):
         self.assertEqual(result, None)
 
     @responses.activate
+    def test_get_identity_address_custom_params(self):
+        # Setup
+        uid = 'uid'
+        url = ('http://id.example.org/api/v1/identities/{0}'
+               '/addresses/msisdn?param_one=set').format(uid)
+        addresses_msisdn_response = {'results': []}
+        responses.add(responses.GET, url,
+                      json=addresses_msisdn_response, status=200,
+                      match_querystring=True)
+        # Execute
+        self.api.get_identity_address(identity_id=uid,
+                                      params={'param_one': 'set'})
+        # This test doesn't assert anything, but responses will raise a
+        # ConnectionError if the params don't match
+
+    @responses.activate
     def test_identity_list_no_results(self):
         # setup
         response = {
