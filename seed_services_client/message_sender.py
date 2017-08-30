@@ -21,18 +21,19 @@ class MessageSenderApiClient(SeedServicesApiClient):
         return self.session.post('/outbound/', data=payload)
 
     def get_outbounds(self, params=None):
-        return get_paginated_response(self.session, '/outbound/',
-                                      params=params)
+        return {"results": get_paginated_response(self.session, '/outbound/',
+                params=params)}
 
     def create_inbound(self, payload):
         return self.session.post('/inbound/', data=payload)
 
     def get_inbounds(self, params=None):
-        return get_paginated_response(self.session, '/inbound/', params=params)
+        return {"results": get_paginated_response(self.session, '/inbound/',
+                params=params)}
 
     def get_failed_tasks(self, params=None):
-        return get_paginated_response(self.session, '/failed-tasks/',
-                                      params=params)
+        return {"results": get_paginated_response(self.session,
+                '/failed-tasks/', params=params)}
 
     def requeue_failed_tasks(self):
         return self.session.post('/failed-tasks/')

@@ -91,7 +91,7 @@ class TestMessageSenderClient(TestCase):
         result = self.api.get_outbounds()
 
         # Check
-        self.assertEqual(list(result), [
+        self.assertEqual(list(result["results"]), [
             {'to_addr': 'addr1', 'content': 'content1'},
             {'to_addr': 'addr2', 'content': 'content2'}])
         self.assertEqual(len(responses.calls), 1)
@@ -134,7 +134,7 @@ class TestMessageSenderClient(TestCase):
         result = self.api.get_outbounds()
 
         # Check
-        self.assertEqual(list(result), [
+        self.assertEqual(list(result["results"]), [
             {'to_addr': 'addr1', 'content': 'content1'},
             {'to_addr': 'addr2', 'content': 'content2'},
             {'to_addr': 'addr3', 'content': 'content3'}])
@@ -167,7 +167,7 @@ class TestMessageSenderClient(TestCase):
         response = self.api.get_inbounds({'from_addr': '+1234'})
 
         # Check
-        self.assertEqual(list(response), [
+        self.assertEqual(list(response["results"]), [
             {'from_addr': '+1234', 'content': 'content1'},
             {'from_addr': '+1234', 'content': 'content2'}])
         self.assertEqual(len(responses.calls), 1)
@@ -211,7 +211,7 @@ class TestMessageSenderClient(TestCase):
         response = self.api.get_inbounds({'from_addr': '+1234'})
 
         # Check
-        self.assertEqual(list(response), [
+        self.assertEqual(list(response["results"]), [
             {'from_addr': '+1234', 'content': 'content1'},
             {'from_addr': '+1234', 'content': 'content2'},
             {'from_addr': '+1234', 'content': 'content3'}])
