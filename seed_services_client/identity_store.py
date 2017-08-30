@@ -1,4 +1,5 @@
 from .seed_services import SeedServicesApiClient
+from .utils import get_paginated_response
 
 
 class IdentityStoreApiClient(SeedServicesApiClient):
@@ -21,13 +22,15 @@ class IdentityStoreApiClient(SeedServicesApiClient):
             auth_token, api_url, session=session, **kwargs)
 
     def get_identities(self, params=None):
-        return self.session.get('/identities/', params=params)
+        return {"results": get_paginated_response(self.session, '/identities/',
+                params=params)}
 
     def search_identities(self, field, value):
         # this is used for searching 'details' field to avoid DRF lacks
         # use "details__preferred_language" for example field
         params = {field: value}
-        return self.session.get('/identities/search/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/identities/search/', params=params)}
 
     def get_identity(self, identity):
         # return None on 404 becuase that means an identity not found
@@ -39,7 +42,8 @@ class IdentityStoreApiClient(SeedServicesApiClient):
 
     def get_identity_by_address(self, address_type, address_value):
         params = {"details__addresses__%s" % address_type: address_value}
-        return self.session.get('/identities/search/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/identities/search/', params=params)}
 
     def get_identity_address(self, identity_id, address_type='msisdn',
                              params=None):
@@ -62,7 +66,8 @@ class IdentityStoreApiClient(SeedServicesApiClient):
         return self.session.post('/identities/', data=identity)
 
     def get_optouts(self, params=None):
-        return self.session.get('/optouts/search/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/optouts/search/', params=params)}
 
     def create_optout(self, optout):
         return self.session.post('/optout/', data=optout)

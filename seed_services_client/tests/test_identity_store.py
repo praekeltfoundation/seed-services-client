@@ -22,10 +22,9 @@ class TestIdentityStoreClient(TestCase):
             'token', 'http://api/', session='session', argument=True)
 
     @responses.activate
-    def test_identity_search(self):
+    def test_identity_search_one_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -52,23 +51,88 @@ class TestIdentityStoreClient(TestCase):
         result = self.api.get_identity_by_address(address_type="msisdn",
                                                   address_value="+27001")
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["id"],
-                         "0c03d360-1180-4fb4-9eed-ecd2cff8fa05")
+        result1 = next(result["results"])
+        self.assertEqual(result1["id"], "0c03d360-1180-4fb4-9eed-ecd2cff8fa05")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                         "http://id.example.org/api/v1/identities/search/?details__addresses__msisdn=%2B27001")  # noqa
 
     @responses.activate
-    def test_details_search(self):
+    def test_identity_search_multiple_pages(self):
         # setup
+        qs = "?details__addresses__msisdn=%2B27001"
         search_response = {
-            "count": 1,
-            "next": None,
+            "next": "http://id.example.org/api/v1/identities/search/%s&"
+                    "cursor=1" % qs,
             "previous": None,
             "results": [
                 {
-                    "id": "0c03d360-1180-4fb4-9eed-ecd2cff8fa05",
+                    "id": "identity-1-80-4fb4-9eed-ecd2cff8fa05",
+                    "version": 1,
+                    "details": {
+                        "default_addr_type": "msisdn",
+                        "addresses": {
+                          "msisdn": {
+                              "+27123": {}
+                          }
+                        }
+                    }
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://id.example.org/api/v1/identities/search/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://id.example.org/api/v1/identities/search/%s&"
+                        "cursor=0" % qs,
+            "results": [
+                {
+                    "id": "identity-2-80-4fb4-9eed-ecd2cff8fa05",
+                    "version": 1,
+                    "details": {
+                        "default_addr_type": "msisdn",
+                        "addresses": {
+                          "msisdn": {
+                              "+27123": {}
+                          }
+                        }
+                    }
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://id.example.org/api/v1/identities/search/%s&"
+                      "cursor=1" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_identity_by_address(address_type="msisdn",
+                                                  address_value="+27001")
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "identity-1-80-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(result2["id"], "identity-2-80-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://id.example.org/api/v1/identities/search/?details__addresses__msisdn=%2B27001")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                        "http://id.example.org/api/v1/identities/search/?details__addresses__msisdn=%2B27001&cursor=1")  # noqa
+
+    @responses.activate
+    def test_details_search(self):
+        # setup
+        qs = "?details__preferred_language=eng_ZA"
+        search_response = {
+            "next": "http://id.example.org/api/v1/identities/search/%s&"
+                    "cursor=1" % qs,
+            "previous": None,
+            "results": [
+                {
+                    "id": "identity-1-80-4fb4-9eed-ecd2cff8fa05",
                     "version": 1,
                     "details": {
                         "preferred_language": "eng_ZA",
@@ -82,27 +146,53 @@ class TestIdentityStoreClient(TestCase):
                 }
             ]
         }
-        qs = "?details__preferred_language=eng_ZA"
         responses.add(responses.GET,
                       "http://id.example.org/api/v1/identities/search/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://id.example.org/api/v1/identities/search/%s&"
+                        "cursor=0" % qs,
+            "results": [
+                {
+                    "id": "identity-2-80-4fb4-9eed-ecd2cff8fa05",
+                    "version": 1,
+                    "details": {
+                        "preferred_language": "eng_ZA",
+                        "default_addr_type": "msisdn",
+                        "addresses": {
+                          "msisdn": {
+                              "+27123": {}
+                          }
+                        }
+                    }
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://id.example.org/api/v1/identities/search/%s&"
+                      "cursor=1" % qs,
                       json=search_response, status=200,
                       match_querystring=True)
         # Execute
         result = self.api.search_identities("details__preferred_language",
                                             "eng_ZA")
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["id"],
-                         "0c03d360-1180-4fb4-9eed-ecd2cff8fa05")
-        self.assertEqual(len(responses.calls), 1)
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "identity-1-80-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(result2["id"], "identity-2-80-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(len(responses.calls), 2)
         self.assertEqual(responses.calls[0].request.url,
                         "http://id.example.org/api/v1/identities/search/?details__preferred_language=eng_ZA")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                        "http://id.example.org/api/v1/identities/search/?details__preferred_language=eng_ZA&cursor=1")  # noqa
 
     @responses.activate
     def test_identity_search_no_results(self):
         # setup
         search_response = {
-            "count": 0,
             "next": None,
             "previous": None,
             "results": []
@@ -116,8 +206,7 @@ class TestIdentityStoreClient(TestCase):
         result = self.api.get_identity_by_address(address_type="msisdn",
                                                   address_value="+27002")
         # Check
-        self.assertEqual(result["count"], 0)
-        self.assertEqual(len(result["results"]), 0)
+        self.assertEqual(len(list(result["results"])), 0)
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                         "http://id.example.org/api/v1/identities/search/?details__addresses__msisdn=%2B27002")  # noqa
@@ -229,7 +318,6 @@ class TestIdentityStoreClient(TestCase):
     def test_identity_list_no_results(self):
         # setup
         response = {
-            "count": 0,
             "next": None,
             "previous": None,
             "results": []
@@ -241,8 +329,7 @@ class TestIdentityStoreClient(TestCase):
         # Execute
         result = self.api.get_identities()
         # Check
-        self.assertEqual(result["count"], 0)
-        self.assertEqual(len(result["results"]), 0)
+        self.assertEqual(len(list(result["results"])), 0)
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://id.example.org/api/v1/identities/")
@@ -251,7 +338,6 @@ class TestIdentityStoreClient(TestCase):
     def test_identity_list_one_results(self):
         # setup
         response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -282,14 +368,72 @@ class TestIdentityStoreClient(TestCase):
         # Execute
         result = self.api.get_identities()
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(len(result["results"]), 1)
-        self.assertEqual(result["results"][0]["version"], 1)
-        self.assertEqual(result["results"][0]["details"]["default_addr_type"],
-                         "msisdn")
+        result1 = next(result["results"])
+        self.assertEqual(result1["version"], 1)
+        self.assertEqual(result1["details"]["default_addr_type"], "msisdn")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://id.example.org/api/v1/identities/")
+
+    @responses.activate
+    def test_identity_list_multiple_pages(self):
+        # setup
+        search_response = {
+            "next": "http://id.example.org/api/v1/identities/?cursor=1",
+            "previous": None,
+            "results": [
+                {
+                    "id": "identity-1-80-4fb4-9eed-ecd2cff8fa05",
+                    "version": 1,
+                    "details": {
+                        "default_addr_type": "msisdn",
+                        "addresses": {
+                          "msisdn": {
+                              "+27123": {}
+                          }
+                        }
+                    }
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://id.example.org/api/v1/identities/",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://id.example.org/api/v1/identities/?cursor=0",
+            "results": [
+                {
+                    "id": "identity-2-80-4fb4-9eed-ecd2cff8fa05",
+                    "version": 1,
+                    "details": {
+                        "default_addr_type": "msisdn",
+                        "addresses": {
+                          "msisdn": {
+                              "+27123": {}
+                          }
+                        }
+                    }
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://id.example.org/api/v1/identities/?cursor=1",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_identities()
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "identity-1-80-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(result2["id"], "identity-2-80-4fb4-9eed-ecd2cff8fa05")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://id.example.org/api/v1/identities/")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                        "http://id.example.org/api/v1/identities/?cursor=1")  # noqa
 
     @responses.activate
     def test_update_identity_details(self):
@@ -367,9 +511,8 @@ class TestIdentityStoreClient(TestCase):
             "http://id.example.org/api/v1/identities/")
 
     @responses.activate
-    def test_get_optouts(self):
+    def test_get_optouts_one_page(self):
         optouts = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -392,11 +535,76 @@ class TestIdentityStoreClient(TestCase):
             json=optouts, match_querystring=True)
 
         res = self.api.get_optouts(params={'optout_type': 'stop'})
-        self.assertEqual(res, optouts)
+        result1 = next(res["results"])
+        self.assertEqual(result1['id'], "e5210c99-8d8a-40f1-8e7f-8a66c4de9e29")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(
             responses.calls[0].request.url,
             "http://id.example.org/api/v1/optouts/search/?optout_type=stop"
+        )
+
+    @responses.activate
+    def test_get_optouts_multiple_pages(self):
+        optouts = {
+            "next": "http://id.example.org/api/v1/optouts/search/?"
+                    "optout_type=stop&cursor=1",
+            "previous": None,
+            "results": [
+                {
+                    "id": "optout-1-8d8a-40f1-8e7f-8a66c4de9e29",
+                    "optout_type": "stop",
+                    "identity": "identity-1-c4-4cab-9e20-5208d77dcd1b",
+                    "address_type": "msisdn",
+                    "address": "+1234",
+                    "request_source": "testsource",
+                    "requestor_source_id": "1",
+                    "reason": "Test reason",
+                    "created_at": "2017-01-27T10:00:06.354178Z"
+                },
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://id.example.org/api/v1/optouts/search/?optout_type=stop",
+            json=optouts, match_querystring=True)
+        optouts = {
+            "next": None,
+            "previous": "http://id.example.org/api/v1/optouts/search/?"
+                        "optout_type=stop&cursor=0",
+            "results": [
+                {
+                    "id": "optout-2-8d8a-40f1-8e7f-8a66c4de9e29",
+                    "optout_type": "stop",
+                    "identity": "identity-2-c4-4cab-9e20-5208d77dcd1b",
+                    "address_type": "msisdn",
+                    "address": "+1234",
+                    "request_source": "testsource",
+                    "requestor_source_id": "1",
+                    "reason": "Test reason",
+                    "created_at": "2017-01-27T10:00:06.354178Z"
+                },
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://id.example.org/api/v1/optouts/search/?optout_type=stop&"
+            "cursor=1",
+            json=optouts, match_querystring=True)
+
+        res = self.api.get_optouts(params={'optout_type': 'stop'})
+        result1 = next(res["results"])
+        result2 = next(res["results"])
+        self.assertEqual(result1['id'], "optout-1-8d8a-40f1-8e7f-8a66c4de9e29")
+        self.assertEqual(result2['id'], "optout-2-8d8a-40f1-8e7f-8a66c4de9e29")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://id.example.org/api/v1/optouts/search/?optout_type=stop"
+        )
+        self.assertEqual(
+            responses.calls[1].request.url,
+            "http://id.example.org/api/v1/optouts/search/?optout_type=stop&"
+            "cursor=1"
         )
 
     @responses.activate
