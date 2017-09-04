@@ -1,9 +1,5 @@
-
-"""
-Client for Messaging Content Store HTTP services APIs.
-
-"""
 from .seed_services import SeedServicesApiClient
+from .utils import get_paginated_response
 
 
 class SchedulerApiClient(SeedServicesApiClient):
@@ -12,7 +8,8 @@ class SchedulerApiClient(SeedServicesApiClient):
     """
 
     def get_schedules(self, params=None):
-        return self.session.get('/schedule/', params=params)
+        return {"results": get_paginated_response(self.session, '/schedule/',
+                params=params)}
 
     def get_schedule(self, schedule_id):
         return self.session.get('/schedule/%s/' % schedule_id)
@@ -28,7 +25,8 @@ class SchedulerApiClient(SeedServicesApiClient):
         return self.session.delete('/schedule/%s/' % schedule_id)
 
     def get_failed_tasks(self, params=None):
-        return self.session.get('/failed-tasks/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/failed-tasks/', params=params)}
 
     def requeue_failed_tasks(self):
         return self.session.post('/failed-tasks/')
