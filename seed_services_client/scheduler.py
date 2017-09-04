@@ -9,16 +9,6 @@ from .seed_services import SeedServicesApiClient
 class SchedulerApiClient(SeedServicesApiClient):
     """
     Client for Scheduler Service.
-
-    :param str auth_token:
-        An access token.
-
-    :param str api_url:
-        The full URL of the API.
-
-    :param JSONServiceClient session:
-        An instance of JSONServiceClient to use
-
     """
 
     def get_schedules(self, params=None):

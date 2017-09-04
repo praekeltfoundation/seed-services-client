@@ -4,16 +4,6 @@ from .seed_services import SeedServicesApiClient
 class ServiceRatingApiClient(SeedServicesApiClient):
     """
     Client for Service Rating Service.
-
-    :param str auth_token:
-        An access token.
-
-    :param str api_url:
-        The full URL of the API.
-
-    :param JSONServiceClient session:
-        An instance of JSONServiceClient to use
-
     """
 
     # Invites
