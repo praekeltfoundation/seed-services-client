@@ -101,5 +101,5 @@ class TestSchedulerApiClient(TestCase):
         # Execute
         result = self.api.delete_schedule(schedule_id)
         # Check
-        self.assertIsNone(result)
+        self.assertEqual(result, {})
         self.assertEqual(len(responses.calls), 1)
