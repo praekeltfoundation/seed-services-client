@@ -1,4 +1,5 @@
 from .seed_services import SeedServicesApiClient
+from .utils import get_paginated_response
 
 
 class ServiceRatingApiClient(SeedServicesApiClient):
@@ -8,7 +9,8 @@ class ServiceRatingApiClient(SeedServicesApiClient):
 
     # Invites
     def get_invites(self, params=None):
-        return self.session.get('/invite/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/invite/', params=params)}
 
     def get_invite(self, invite_id):
         return self.session.get('/invite/%s/' % invite_id)
@@ -26,7 +28,8 @@ class ServiceRatingApiClient(SeedServicesApiClient):
 
     # Ratings
     def get_ratings(self, params=None):
-        return self.session.get('/rating/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/rating/', params=params)}
 
     def get_rating(self, rating_id):
         return self.session.get('/rating/%s/' % rating_id)
