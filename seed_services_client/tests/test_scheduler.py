@@ -92,17 +92,14 @@ class TestSchedulerApiClient(TestCase):
     @responses.activate
     def test_delete_schedule(self):
         schedule_id = "7bfffecf-abe8-4302-bd91-fd617e1c592e"
-        response = {
-            "id": schedule_id,
-            "foo": "bar",
-        }
+        response = {}
         responses.add(
             responses.DELETE,
             "http://example.org/api/v1/schedule/%s/" % (
                 schedule_id,),
-            json=response, status=201)
+            json=response, status=204)
         # Execute
         result = self.api.delete_schedule(schedule_id)
         # Check
-        self.assertEqual(result["success"], True)
+        self.assertEqual(result, {})
         self.assertEqual(len(responses.calls), 1)
