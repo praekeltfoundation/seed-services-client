@@ -1,4 +1,5 @@
 from .seed_services import SeedServicesApiClient
+from .utils import get_paginated_response
 
 
 class StageBasedMessagingApiClient(SeedServicesApiClient):
@@ -20,13 +21,15 @@ class StageBasedMessagingApiClient(SeedServicesApiClient):
     """
 
     def get_schedules(self, params=None):
-        return self.session.get('/schedule/', params=params)
+        return {"results": get_paginated_response(self.session, '/schedule/',
+                params=params)}
 
     def get_schedule(self, schedule_id):
         return self.session.get('/schedule/%s/' % schedule_id)
 
     def get_messagesets(self, params=None):
-        return self.session.get('/messageset/', params=params)
+        return {"results": get_paginated_response(self.session, '/messageset/',
+                params=params)}
 
     def get_messageset(self, messageset_id):
         return self.session.get('/messageset/%s/' % messageset_id)
@@ -38,10 +41,12 @@ class StageBasedMessagingApiClient(SeedServicesApiClient):
         return self.session.get('/subscriptions/%s/' % subscription)
 
     def get_subscriptions(self, params=None):
-        return self.session.get('/subscriptions/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/subscriptions/', params=params)}
 
     def get_messages(self, params=None):
-        return self.session.get('/message/', params=params)
+        return {"results": get_paginated_response(self.session, '/message/',
+                params=params)}
 
     def get_message(self, message_id):
         return self.session.get('/message/%s/' % message_id)
@@ -66,7 +71,8 @@ class StageBasedMessagingApiClient(SeedServicesApiClient):
         return self.session.post('/subscriptions/', data=subscription)
 
     def get_failed_tasks(self, params=None):
-        return self.session.get('/failed-tasks/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/failed-tasks/', params=params)}
 
     def requeue_failed_tasks(self):
         return self.session.post('/failed-tasks/')

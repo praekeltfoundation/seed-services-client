@@ -71,13 +71,13 @@ class TestMessageSenderClient(TestCase):
                          "http://ms.example.org/api/v1/outbound/")
 
     @responses.activate
-    def test_get_outbounds(self):
+    def test_get_outbounds_single_page(self):
         outbounds = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
-                {'to_addr': 'addr', 'content': 'content'},
+                {'to_addr': 'addr1', 'content': 'content1'},
+                {'to_addr': 'addr2', 'content': 'content2'},
             ]
         }
 
@@ -91,7 +91,9 @@ class TestMessageSenderClient(TestCase):
         result = self.api.get_outbounds()
 
         # Check
-        self.assertEqual(result, outbounds)
+        self.assertEqual(list(result["results"]), [
+            {'to_addr': 'addr1', 'content': 'content1'},
+            {'to_addr': 'addr2', 'content': 'content2'}])
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(
             responses.calls[0].request.url,
@@ -99,20 +101,128 @@ class TestMessageSenderClient(TestCase):
         )
 
     @responses.activate
-    def test_get_inbounds(self):
+    def test_get_outbounds_mulitple_pages(self):
+        outbounds = {
+            "next": "http://ms.example.org/api/v1/outbound/?cursor=1",
+            "previous": None,
+            "results": [
+                {'to_addr': 'addr1', 'content': 'content1'},
+                {'to_addr': 'addr2', 'content': 'content2'},
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://ms.example.org/api/v1/outbound/",
+            json=outbounds,
+            status=200, content_type='application/json', match_querystring=True
+        )
+
+        outbounds = {
+            "next": None,
+            "previous": "http://ms.example.org/api/v1/outbound/?cursor=0",
+            "results": [
+                {'to_addr': 'addr3', 'content': 'content3'},
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://ms.example.org/api/v1/outbound/?cursor=1",
+            json=outbounds,
+            status=200, content_type='application/json', match_querystring=True
+        )
+        # Execute
+        result = self.api.get_outbounds()
+
+        # Check
+        self.assertEqual(list(result["results"]), [
+            {'to_addr': 'addr1', 'content': 'content1'},
+            {'to_addr': 'addr2', 'content': 'content2'},
+            {'to_addr': 'addr3', 'content': 'content3'}])
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://ms.example.org/api/v1/outbound/"
+        )
+        self.assertEqual(
+            responses.calls[1].request.url,
+            "http://ms.example.org/api/v1/outbound/?cursor=1"
+        )
+
+    @responses.activate
+    def test_get_inbounds_single_page(self):
+        inbounds = {
+            "next": None,
+            "previous": None,
+            "results": [
+                {'from_addr': '+1234', 'content': 'content1'},
+                {'from_addr': '+1234', 'content': 'content2'},
+            ]
+        }
         # Catch all requests
         responses.add(
-            responses.GET, re.compile(r'.*'), json={'test': 'response'},
-            status=200)
+            responses.GET, "http://ms.example.org/api/v1/inbound/",
+            json=inbounds, status=200)
 
         # Execute
         response = self.api.get_inbounds({'from_addr': '+1234'})
 
         # Check
-        self.assertEqual(response, {'test': 'response'})
+        self.assertEqual(list(response["results"]), [
+            {'from_addr': '+1234', 'content': 'content1'},
+            {'from_addr': '+1234', 'content': 'content2'}])
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.method, 'GET')
         self.assertEqual(
             responses.calls[0].request.url,
             "http://ms.example.org/api/v1/inbound/?from_addr=%2B1234"
+        )
+
+    @responses.activate
+    def test_get_inbounds_mulitple_pages(self):
+        inbounds = {
+            "next": "http://ms.example.org/api/v1/inbound/?from_addr=%2B1234"
+                    "&cursor=1",
+            "previous": None,
+            "results": [
+                {'from_addr': '+1234', 'content': 'content1'},
+                {'from_addr': '+1234', 'content': 'content2'},
+            ]
+        }
+        # Catch all requests
+        responses.add(
+            responses.GET,
+            "http://ms.example.org/api/v1/inbound/?from_addr=%2B1234",
+            json=inbounds, status=200, match_querystring=True)
+
+        inbounds = {
+            "next": None,
+            "previous": "http://ms.example.org/api/v1/inbound/?"
+                        "from_addr=%2B1234&cursor=1",
+            "results": [
+                {'from_addr': '+1234', 'content': 'content3'},
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://ms.example.org/api/v1/inbound/?from_addr=%2B1234&cursor=1",
+            json=inbounds, status=200, match_querystring=True)
+
+        # Execute
+        response = self.api.get_inbounds({'from_addr': '+1234'})
+
+        # Check
+        self.assertEqual(list(response["results"]), [
+            {'from_addr': '+1234', 'content': 'content1'},
+            {'from_addr': '+1234', 'content': 'content2'},
+            {'from_addr': '+1234', 'content': 'content3'}])
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.method, 'GET')
+        self.assertEqual(
+            responses.calls[0].request.url,
+            "http://ms.example.org/api/v1/inbound/?from_addr=%2B1234"
+        )
+        self.assertEqual(responses.calls[1].request.method, 'GET')
+        self.assertEqual(
+            responses.calls[1].request.url,
+            "http://ms.example.org/api/v1/inbound/?from_addr=%2B1234&cursor=1"
         )

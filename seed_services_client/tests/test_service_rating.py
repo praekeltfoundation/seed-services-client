@@ -11,16 +11,19 @@ class TestServiceRatingApiClient(TestCase):
 
     # Invite testing
     @responses.activate
-    def test_get_invites(self):
+    def test_get_invites_single_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
                 {
-                    "id": "foo",
-                    "key": "bar",
+                    "id": "foo_1",
+                    "key": "bar_1",
+                },
+                {
+                    "id": "foo_2",
+                    "key": "bar_2",
                 }
             ]
         }
@@ -31,9 +34,61 @@ class TestServiceRatingApiClient(TestCase):
         # Execute
         result = self.api.get_invites(params={"foo": "bar"})
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["id"], "foo")
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "foo_1")
+        self.assertEqual(result1["key"], "bar_1")
+        self.assertEqual(result2["id"], "foo_2")
+        self.assertEqual(result2["key"], "bar_2")
         self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://example.org/api/v1/invite/?foo=bar")
+
+    @responses.activate
+    def test_get_invites_multiple_pages(self):
+        # setup
+        search_response = {
+            "next": "http://example.org/api/v1/invite/?foo=bar&cursor=1",
+            "previous": None,
+            "results": [
+                {
+                    "id": "foo_1",
+                    "key": "bar_1",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://example.org/api/v1/invite/?foo=bar",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://example.org/api/v1/invite/?foo=bar&cursor=0",
+            "results": [
+                {
+                    "id": "foo_2",
+                    "key": "bar_2",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://example.org/api/v1/invite/?foo=bar&cursor=1",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_invites(params={"foo": "bar"})
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "foo_1")
+        self.assertEqual(result1["key"], "bar_1")
+        self.assertEqual(result2["id"], "foo_2")
+        self.assertEqual(result2["key"], "bar_2")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://example.org/api/v1/invite/?foo=bar")
+        self.assertEqual(responses.calls[1].request.url,
+                         "http://example.org/api/v1/invite/?foo=bar&cursor=1")
 
     @responses.activate
     def test_get_invite(self):
@@ -110,16 +165,19 @@ class TestServiceRatingApiClient(TestCase):
 
     # Rating testing
     @responses.activate
-    def test_get_ratings(self):
+    def test_get_ratings_single_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
                 {
-                    "id": "foo",
-                    "key": "bar",
+                    "id": "foo_1",
+                    "key": "bar_1",
+                },
+                {
+                    "id": "foo_2",
+                    "key": "bar_2",
                 }
             ]
         }
@@ -130,9 +188,61 @@ class TestServiceRatingApiClient(TestCase):
         # Execute
         result = self.api.get_ratings(params={"foo": "bar"})
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["id"], "foo")
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "foo_1")
+        self.assertEqual(result1["key"], "bar_1")
+        self.assertEqual(result2["id"], "foo_2")
+        self.assertEqual(result2["key"], "bar_2")
         self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://example.org/api/v1/rating/?foo=bar")
+
+    @responses.activate
+    def test_get_ratings_multiple_pages(self):
+        # setup
+        search_response = {
+            "next": "http://example.org/api/v1/rating/?foo=bar&cursor=1",
+            "previous": None,
+            "results": [
+                {
+                    "id": "foo_1",
+                    "key": "bar_1",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://example.org/api/v1/rating/?foo=bar",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://example.org/api/v1/rating/?foo=bar&cursor=0",
+            "results": [
+                {
+                    "id": "foo_2",
+                    "key": "bar_2",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://example.org/api/v1/rating/?foo=bar&cursor=1",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_ratings(params={"foo": "bar"})
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "foo_1")
+        self.assertEqual(result1["key"], "bar_1")
+        self.assertEqual(result2["id"], "foo_2")
+        self.assertEqual(result2["key"], "bar_2")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://example.org/api/v1/rating/?foo=bar")
+        self.assertEqual(responses.calls[1].request.url,
+                         "http://example.org/api/v1/rating/?foo=bar&cursor=1")
 
     @responses.activate
     def test_get_rating(self):

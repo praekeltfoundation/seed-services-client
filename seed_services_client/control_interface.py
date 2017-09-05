@@ -1,4 +1,5 @@
 from demands import JSONServiceClient
+from .utils import get_paginated_response
 
 
 class ControlInterfaceApiClient(object):
@@ -22,7 +23,8 @@ class ControlInterfaceApiClient(object):
         self.session = session
 
     def get_user_service_tokens(self, params=None):
-        return self.session.get('/userservicetoken/', params=params)
+        return {"results": get_paginated_response(
+                self.session, '/userservicetoken/', params=params)}
 
     def generate_user_service_tokens(self, user):
         return self.session.post('/userservicetoken/generate/', data=user)
@@ -36,17 +38,20 @@ class ControlInterfaceApiClient(object):
         return result
 
     def get_services(self, params=None):
-        return self.session.get('/service/', params=params)
+        return {"results": get_paginated_response(
+                self.session, '/service/', params=params)}
 
     def get_service_status(self, service):
         params = {"service": service, "ordering": "-created_at"}
-        return self.session.get('/status/', params=params)
+        return {"results": get_paginated_response(
+                self.session, '/status/', params=params)}
 
     def get_user_dashboards(self, user_id):
         params = {
             "user_id": user_id
         }
-        return self.session.get('/userdashboard/', params=params)
+        return {"results": get_paginated_response(
+                self.session, '/userdashboard/', params=params)}
 
     def get_dashboard(self, dashboard):
         return self.session.get('/dashboard/%s/' % dashboard)

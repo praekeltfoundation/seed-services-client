@@ -1,4 +1,5 @@
 from demands import JSONServiceClient
+from .utils import get_paginated_response
 
 
 class HubApiClient(object):
@@ -26,7 +27,8 @@ class HubApiClient(object):
         Filter params can include
         'stage', 'mother_id', 'validated', 'source', 'created_before'
         'created_after' """
-        return self.session.get('/registrations/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/registrations/', params=params)}
 
     def get_registration(self, registration):
         return self.session.get('/registrations/%s/' % registration)
@@ -43,7 +45,8 @@ class HubApiClient(object):
         Filter params can include
         'action', 'mother_id', 'validated', 'source', 'created_before'
         'created_after' """
-        return self.session.get('/changes/', params=params)
+        return {"results": get_paginated_response(self.session, '/changes/',
+                params=params)}
 
     def get_change(self, change):
         return self.session.get('/changes/%s/' % change)
@@ -67,4 +70,5 @@ class HubApiClient(object):
         return self.session.post('/change_admin/', data=change)
 
     def get_report_tasks(self, params=None):
-        return self.session.get('/reporttasks/', params=params)
+        return {"results": get_paginated_response(self.session,
+                '/reporttasks/', params=params)}

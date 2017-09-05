@@ -10,29 +10,78 @@ class TestSchedulerApiClient(TestCase):
         self.api = SchedulerApiClient("NO", "http://example.org/api/v1")
 
     @responses.activate
-    def test_get_schedules(self):
+    def test_get_schedules_one_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
                 {
-                    "id": "foo",
-                    "key": "bar",
+                    "id": "schedule-1-57-4376-baea-a12dc7fbcbcf",
+                    "frequency": 44,
+                    "cron_definition": "* * * * 1",
+                },
+                {
+                    "id": "schedule-2-57-4376-baea-a12dc7fbcbcf",
+                    "frequency": 44,
+                    "cron_definition": "* * * * 1",
                 }
             ]
         }
         responses.add(responses.GET,
-                      "http://example.org/api/v1/schedule/?foo=bar",
+                      "http://example.org/api/v1/schedule/?frequency=44",
                       json=search_response, status=200,
                       match_querystring=True)
         # Execute
-        result = self.api.get_schedules(params={"foo": "bar"})
+        result = self.api.get_schedules(params={"frequency": "44"})
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["id"], "foo")
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "schedule-1-57-4376-baea-a12dc7fbcbcf")
+        self.assertEqual(result2["id"], "schedule-2-57-4376-baea-a12dc7fbcbcf")
         self.assertEqual(len(responses.calls), 1)
+
+    @responses.activate
+    def test_get_schedules_multiple_pages(self):
+        # setup
+        search_response = {
+            "next": "http://example.org/api/v1/schedule/?frequency=44&cursor=1",  # noqa
+            "previous": None,
+            "results": [
+                {
+                    "id": "schedule-1-57-4376-baea-a12dc7fbcbcf",
+                    "frequency": 44,
+                    "cron_definition": "* * * * 1",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://example.org/api/v1/schedule/?frequency=44",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://example.org/api/v1/schedule/?frequency=44&cursor=0",  # noqa
+            "results": [
+                {
+                    "id": "schedule-2-57-4376-baea-a12dc7fbcbcf",
+                    "frequency": 44,
+                    "cron_definition": "* * * * 1",
+                }
+            ]
+        }
+        responses.add(
+            responses.GET,
+            "http://example.org/api/v1/schedule/?frequency=44&cursor=1",
+            json=search_response, status=200, match_querystring=True)
+        # Execute
+        result = self.api.get_schedules(params={"frequency": "44"})
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "schedule-1-57-4376-baea-a12dc7fbcbcf")
+        self.assertEqual(result2["id"], "schedule-2-57-4376-baea-a12dc7fbcbcf")
+        self.assertEqual(len(responses.calls), 2)
 
     @responses.activate
     def test_get_schedule(self):

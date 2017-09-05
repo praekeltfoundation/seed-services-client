@@ -11,10 +11,9 @@ class TestHubClient(TestCase):
                                 "http://hub.example.org/api/v1")
 
     @responses.activate
-    def test_get_registrations(self):
+    def test_get_registrations_one_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -55,11 +54,80 @@ class TestHubClient(TestCase):
         result = self.api.get_registrations(params={
             "mother_id": "5cc97b85-c73c-46e3-8a14-df065727b582"})
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["stage"], "prebirth")
+        result1 = next(result["results"])
+        self.assertEqual(result1["stage"], "prebirth")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                         "http://hub.example.org/api/v1/registrations/?mother_id=5cc97b85-c73c-46e3-8a14-df065727b582")  # noqa
+
+    @responses.activate
+    def test_get_registrations_multiple_pages(self):
+        # setup
+        qs = "?mother_id=5cc97b85-c73c-46e3-8a14-df065727b582"
+        search_response = {
+            "next": "http://hub.example.org/api/v1/registrations/%s&cursor=1"
+                    % qs,
+            "previous": None,
+            "results": [
+                {
+                    "id": "reg-1-cf-abe8-4302-bd91-fd617e1c592e",
+                    "stage": "prebirth",
+                    "mother_id": "5cc97b85-c73c-46e3-8a14-df065727b582",
+                    "validated": True,
+                    "data": {
+                        "last_period_date": "20160202",
+                    },
+                    "source": 1,
+                    "created_at": "2016-08-03T19:39:26.464102Z",
+                    "updated_at": "2016-08-03T19:39:26.464152Z",
+                    "created_by": 1,
+                    "updated_by": 1
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/registrations/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://hub.example.org/api/v1/registrations/%s"
+                        "&cursor=0" % qs,
+            "results": [
+                {
+                    "id": "reg-2-cf-abe8-4302-bd91-fd617e1c592e",
+                    "stage": "prebirth",
+                    "mother_id": "5cc97b85-c73c-46e3-8a14-df065727b582",
+                    "validated": True,
+                    "data": {
+                        "last_period_date": "20170202",
+                    },
+                    "source": 1,
+                    "created_at": "2016-08-03T19:39:26.464102Z",
+                    "updated_at": "2016-08-03T19:39:26.464152Z",
+                    "created_by": 1,
+                    "updated_by": 1
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/registrations/%s&cursor=1"
+                      % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_registrations(params={
+            "mother_id": "5cc97b85-c73c-46e3-8a14-df065727b582"})
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["id"], "reg-1-cf-abe8-4302-bd91-fd617e1c592e")
+        self.assertEqual(result2["id"], "reg-2-cf-abe8-4302-bd91-fd617e1c592e")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://hub.example.org/api/v1/registrations/?mother_id=5cc97b85-c73c-46e3-8a14-df065727b582")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                        "http://hub.example.org/api/v1/registrations/?mother_id=5cc97b85-c73c-46e3-8a14-df065727b582&cursor=1")  # noqa
 
     @responses.activate
     def test_get_registration(self):
@@ -211,10 +279,9 @@ class TestHubClient(TestCase):
             "http://hub.example.org/api/v1/registration/%s/" % uid)
 
     @responses.activate
-    def test_get_changes(self):
+    def test_get_changes_one_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -240,11 +307,70 @@ class TestHubClient(TestCase):
         result = self.api.get_changes(params={
             "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99"})
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["action"], "change_messaging")
+        result1 = next(result["results"])
+        self.assertEqual(result1["action"], "change_messaging")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                         "http://hub.example.org/api/v1/changes/?mother_id=846877e6-afaa-43de-acb1-09f61ad4de99")  # noqa
+
+    @responses.activate
+    def test_get_changes_multiple_pages(self):
+        # setup
+        qs = "?mother_id=846877e6-afaa-43de-acb1-09f61ad4de99"
+        search_response = {
+            "next": "http://hub.example.org/api/v1/changes/%s&cursor=1" % qs,
+            "previous": None,
+            "results": [
+                {
+                    "id": "change-1-abe8-4302-bd91-fd617e1c592e",
+                    "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+                    "action": "change_messaging",
+                    "data": {
+                        "msg_type": "audio",
+                        "voice_days": "tue_thu",
+                        "voice_times": "9_11"
+                    },
+                    "source": 1
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/changes/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://hub.example.org/api/v1/changes/%s&cursor=0"
+                        % qs,
+            "results": [
+                {
+                    "id": "change-2-abe8-4302-bd91-fd617e1c592e",
+                    "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+                    "action": "change_msisdn",
+                    "data": {
+                        "new_msisdn": "+23456789"
+                    },
+                    "source": 1
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/changes/%s&cursor=1" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_changes(params={
+            "mother_id": "846877e6-afaa-43de-acb1-09f61ad4de99"})
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["action"], "change_messaging")
+        self.assertEqual(result2["action"], "change_msisdn")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://hub.example.org/api/v1/changes/?mother_id=846877e6-afaa-43de-acb1-09f61ad4de99")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                        "http://hub.example.org/api/v1/changes/?mother_id=846877e6-afaa-43de-acb1-09f61ad4de99&cursor=1")  # noqa
 
     @responses.activate
     def test_get_change(self):
@@ -383,10 +509,9 @@ class TestHubClient(TestCase):
                          "http://hub.example.org/api/v1/change_admin/")
 
     @responses.activate
-    def test_get_report_tasks(self):
+    def test_get_report_tasks_one_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -410,8 +535,65 @@ class TestHubClient(TestCase):
         result = self.api.get_report_tasks()
 
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["status"], "Pending")
+        result1 = next(result["results"])
+        self.assertEqual(result1["status"], "Pending")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://hub.example.org/api/v1/reporttasks/")
+
+    @responses.activate
+    def test_get_report_tasks_multiple_pages(self):
+        # setup
+        search_response = {
+            "next": "http://hub.example.org/api/v1/reporttasks/?cursor=1",
+            "previous": None,
+            "results": [
+                {
+                    'status': 'Pending',
+                    'end_date': '2016-02-01 00:00:00+00:00',
+                    'created_at': '2017-08-16T09:35:15.940212Z',
+                    'file_size': None,
+                    'updated_at': '2017-08-16T09:35:15.940227Z',
+                    'error': None,
+                    'email_subject': 'The Email Subject',
+                    'start_date': '2016-01-01 00:00:00+00:00'
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/reporttasks/",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://hub.example.org/api/v1/reporttasks/?cursor=0",
+            "results": [
+                {
+                    'status': 'Completed',
+                    'end_date': '2016-02-01 00:00:00+00:00',
+                    'created_at': '2017-08-16T09:35:15.940212Z',
+                    'file_size': None,
+                    'updated_at': '2017-08-16T09:35:15.940227Z',
+                    'error': None,
+                    'email_subject': 'The Email Subject',
+                    'start_date': '2016-01-01 00:00:00+00:00'
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/reporttasks/?cursor=1",
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_report_tasks()
+
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["status"], "Pending")
+        self.assertEqual(result2["status"], "Completed")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://hub.example.org/api/v1/reporttasks/")
+        self.assertEqual(responses.calls[1].request.url,
+                         "http://hub.example.org/api/v1/reporttasks/?cursor=1")

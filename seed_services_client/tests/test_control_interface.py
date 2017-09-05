@@ -11,10 +11,9 @@ class TestControlInterfaceClient(TestCase):
                                              "http://ci.example.org/api/v1")
 
     @responses.activate
-    def test_get_user_service_tokens(self):
+    def test_get_user_service_tokens_one_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -36,18 +35,75 @@ class TestControlInterfaceClient(TestCase):
         # Execute
         result = self.api.get_user_service_tokens(params={"email": "t@eg.org"})
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["user_id"], 1)
-        self.assertEqual(result["results"][0]["token"], "testtoken")
+        result1 = next(result["results"], [])
+        self.assertEqual(result1["user_id"], 1)
+        self.assertEqual(result1["token"], "testtoken")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                         "http://ci.example.org/api/v1/userservicetoken/?email=t%40eg.org")  # noqa
 
     @responses.activate
+    def test_get_user_service_tokens_multiple_pages(self):
+        # setup
+        qs = "?email=t%40eg.org"
+        search_response = {
+            "next": "http://ci.example.org/api/v1/userservicetoken/"
+                    "%s&cursor=1" % qs,
+            "previous": None,
+            "results": [
+                {
+                    "user_id": 1,
+                    "email": "t@eg.org",
+                    "service": "Test Service",
+                    "token": "testtoken",
+                    "created_at": "2016-08-03T13:14:18.874925Z",
+                    "updated_at": "2016-08-03T13:14:18.874953Z"
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/userservicetoken/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://ci.example.org/api/v1/userservicetoken/"
+                        "%s&cursor=0" % qs,
+            "results": [
+                {
+                    "user_id": 1,
+                    "email": "t@eg.org",
+                    "service": "Test Another Service",
+                    "token": "testanothertoken",
+                    "created_at": "2016-08-03T13:14:18.874925Z",
+                    "updated_at": "2016-08-03T13:14:18.874953Z"
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/userservicetoken/"
+                      "%s&cursor=1" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_user_service_tokens(params={"email": "t@eg.org"})
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["user_id"], 1)
+        self.assertEqual(result1["token"], "testtoken")
+        self.assertEqual(result2["user_id"], 1)
+        self.assertEqual(result2["token"], "testanothertoken")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://ci.example.org/api/v1/userservicetoken/?email=t%40eg.org")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                        "http://ci.example.org/api/v1/userservicetoken/?email=t%40eg.org&cursor=1")  # noqa
+
+    @responses.activate
     def test_get_user_service_tokens_no_results(self):
         # setup
         search_response = {
-            "count": 0,
             "next": None,
             "previous": None,
             "results": []
@@ -60,17 +116,15 @@ class TestControlInterfaceClient(TestCase):
         # Execute
         result = self.api.get_user_service_tokens(params={"email": "n@eg.org"})
         # Check
-        self.assertEqual(result["count"], 0)
-        self.assertEqual(len(result["results"]), 0)
+        self.assertEqual(len(list(result["results"])), 0)
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                         "http://ci.example.org/api/v1/userservicetoken/?email=n%40eg.org")  # noqa
 
     @responses.activate
-    def test_get_services(self):
+    def test_get_services_one_page(self):
         # setup
         services_response = {
-            "count": 2,
             "next": None,
             "previous": None,
             "results": [
@@ -106,12 +160,74 @@ class TestControlInterfaceClient(TestCase):
         # Execute
         result = self.api.get_services()
         # Check
-        self.assertEqual(result["count"], 2)
-        self.assertEqual(result["results"][0]["name"], "SEED_IDENTITY_STORE")
-        self.assertEqual(result["results"][0]["token"], "id_store_token")
+        result1 = next(result["results"])
+        self.assertEqual(result1["name"], "SEED_IDENTITY_STORE")
+        self.assertEqual(result1["token"], "id_store_token")
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://ci.example.org/api/v1/service/")
+
+    @responses.activate
+    def test_get_services_multiple_pages(self):
+        # setup
+        services_response = {
+            "next": "http://ci.example.org/api/v1/service/?cursor=1",
+            "previous": None,
+            "results": [
+                {
+                    "id": "ba79f008-cc34-437e-ba6a-02b3c2e5fc9e",
+                    "name": "SEED_IDENTITY_STORE",
+                    "url": "http://id.seed.example.org",
+                    "token": "id_store_token",
+                    "up": True,
+                    "metadata": None,
+                    "created_at": "2016-05-05T14:06:33.250602Z",
+                    "created_by": 1,
+                    "updated_at": "2016-05-05T14:06:33.250630Z",
+                    "updated_by": 1
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/service/",
+                      json=services_response, status=200,
+                      match_querystring=True)
+        services_response = {
+            "next": None,
+            "previous": "http://ci.example.org/api/v1/service/?cursor=0",
+            "results": [
+                {
+                    "id": "df7f3f44-aed1-4e75-a1f9-b6398ef4760e",
+                    "name": "SEED_STAGE_BASED_MESSAGING",
+                    "url": "http://sbm.seed.example.org",
+                    "token": "sbm_store_token",
+                    "up": True,
+                    "metadata": None,
+                    "created_at": "2016-08-03T13:12:18.296637Z",
+                    "created_by": 1,
+                    "updated_at": "2016-08-03T13:12:18.296794Z",
+                    "updated_by": 1
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/service/?cursor=1",
+                      json=services_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_services()
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["name"], "SEED_IDENTITY_STORE")
+        self.assertEqual(result1["token"], "id_store_token")
+        self.assertEqual(result2["name"], "SEED_STAGE_BASED_MESSAGING")
+        self.assertEqual(result2["token"], "sbm_store_token")
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://ci.example.org/api/v1/service/")
+        self.assertEqual(responses.calls[1].request.url,
+                         "http://ci.example.org/api/v1/service/?cursor=1")
 
     @responses.activate
     def test_get_service(self):
@@ -141,10 +257,9 @@ class TestControlInterfaceClient(TestCase):
                          "http://ci.example.org/api/v1/service/ba79f008-cc34-437e-ba6a-02b3c2e5fc9e/")  # noqa
 
     @responses.activate
-    def test_get_service_status(self):
+    def test_get_service_status_one_page(self):
         # setup
         status_response = {
-            "count": 2,
             "next": None,
             "previous": None,
             "results": [
@@ -170,10 +285,56 @@ class TestControlInterfaceClient(TestCase):
         # Execute
         result = self.api.get_service_status("serviceuuid")
         # Check
-        self.assertEqual(result["count"], 2)
-        self.assertEqual(result["results"][0]["up"], True)
-        self.assertEqual(result["results"][1]["up"], False)
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["up"], True)
+        self.assertEqual(result2["up"], False)
         self.assertEqual(len(responses.calls), 1)
+
+    @responses.activate
+    def test_get_service_status_multiple_pages(self):
+        # setup
+        qs = "?ordering=-created_at&service=serviceuuid"
+        status_response = {
+            "next": "http://ci.example.org/api/v1/status/%s&cursor=1" % qs,
+            "previous": None,
+            "results": [
+                {
+                    "id": "a01d97ee-669e-4a22-b4fd-8d0a81e57691",
+                    "service": "SEED_IDENTITY_STORE",
+                    "up": True,
+                    "created_at": "2016-05-05T14:14:59.294611Z"
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/status/%s" % qs,
+                      json=status_response, status=200,
+                      match_querystring=True)
+        status_response = {
+            "next": None,
+            "previous": "http://ci.example.org/api/v1/status/%s&cursor=0" % qs,
+            "results": [
+                {
+                    "id": "5d078cf1-c5ea-4e7a-a191-c54f79d4a59e",
+                    "service": "SEED_IDENTITY_STORE",
+                    "up": False,
+                    "created_at": "2016-05-05T14:14:54.782284Z"
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/status/%s&cursor=1" % qs,
+                      json=status_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_service_status("serviceuuid")
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["up"], True)
+        self.assertEqual(result2["up"], False)
+        self.assertEqual(len(responses.calls), 2)
 
     @responses.activate
     def test_generate_user_service_tokens(self):
@@ -199,10 +360,9 @@ class TestControlInterfaceClient(TestCase):
                          "http://ci.example.org/api/v1/userservicetoken/generate/")  # noqa
 
     @responses.activate
-    def test_get_user_dashboards(self):
+    def test_get_user_dashboards_single_page(self):
         # setup
         search_response = {
-            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -229,12 +389,72 @@ class TestControlInterfaceClient(TestCase):
         # Execute
         result = self.api.get_user_dashboards(user_id=1)
         # Check
-        self.assertEqual(result["count"], 1)
-        self.assertEqual(result["results"][0]["user_id"], 1)
-        self.assertEqual(result["results"][0]["dashboards"][0]["id"], 1)
+        result1 = next(result["results"])
+        self.assertEqual(result1["user_id"], 1)
+        self.assertEqual(result1["dashboards"][0]["id"], 1)
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://ci.example.org/api/v1/userdashboard/?user_id=1")  # noqa
+
+    @responses.activate
+    def test_get_user_dashboards_multiple_pages(self):
+        # setup
+        qs = "?user_id=1"
+        search_response = {
+            "next": "http://ci.example.org/api/v1/userdashboard/%s&cursor=1"
+                    % qs,
+            "previous": None,
+            "results": [
+                {
+                    "user_id": 1,
+                    "dashboards": [{
+                        "id": 1,
+                        "name": "Overview"
+                    }],
+                    "default_dashboard": {
+                        "id": 1,
+                        "name": "Overview"
+                    }
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/userdashboard/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        search_response = {
+            "next": None,
+            "previous": "http://ci.example.org/api/v1/userdashboard/%s"
+                        "&cursor=0" % qs,
+            "results": [
+                {
+                    "user_id": 1,
+                    "dashboards": [{
+                        "id": 2,
+                        "name": "Registrations"
+                    }]
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/userdashboard/%s&cursor=1"
+                      % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_user_dashboards(user_id=1)
+        # Check
+        result1 = next(result["results"])
+        result2 = next(result["results"])
+        self.assertEqual(result1["user_id"], 1)
+        self.assertEqual(result1["dashboards"][0]["id"], 1)
+        self.assertEqual(result2["user_id"], 1)
+        self.assertEqual(result2["dashboards"][0]["id"], 2)
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://ci.example.org/api/v1/userdashboard/?user_id=1")  # noqa
+        self.assertEqual(responses.calls[1].request.url,
+                         "http://ci.example.org/api/v1/userdashboard/?user_id=1&cursor=1")  # noqa
 
     @responses.activate
     def test_get_dashboard(self):
