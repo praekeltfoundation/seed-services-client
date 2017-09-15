@@ -54,6 +54,11 @@ class StageBasedMessagingApiClient(SeedServicesApiClient):
     def delete_message(self, message_id):
         return self.session.delete('/message/%s/' % message_id)
 
+    def update_message(self, message_id, data=None):
+        return self.session.patch(
+            '/message/{0}/'.format(message_id),
+            data=data)
+
     def delete_binarycontent(self, binarycontent_id):
         return self.session.delete('/binarycontent/%s/' % binarycontent_id)
 

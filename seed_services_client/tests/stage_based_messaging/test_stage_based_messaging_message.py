@@ -108,3 +108,20 @@ class TestStageBasedMessagingClientMessage(TestCase):
         self.assertEqual(result2["id"], 2)
         self.assertEqual(result2["text_content"], "message 2 content")
         self.assertEqual(len(responses.calls), 2)
+
+    @responses.activate
+    def test_update_message(self):
+        responses.add(responses.PATCH,
+                      'http://sbm.example.org/api/v1/message/1/',
+                      json={}, status=200, match_querystring=True)
+
+        self.api.update_message(1, {'text_content': 'new content'})
+
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.method, 'PATCH')
+        self.assertEqual(
+            responses.calls[0].request.body,
+            '{"text_content": "new content"}')
+        self.assertEqual(
+            responses.calls[0].request.url,
+            'http://sbm.example.org/api/v1/message/1/')
