@@ -1,6 +1,8 @@
 from demands import HTTPServiceClient, JSONServiceClient
 from requests.adapters import HTTPAdapter
 
+from .__version__ import __version__ as client_version
+
 
 class SeedHTTPAdapter(HTTPAdapter):
     """
@@ -44,7 +46,10 @@ class SeedServicesApiClient(object):
     def __init__(self, auth_token, api_url, session=None, session_http=None,
                  retries=0, timeout=65):
 
-        headers = {'Authorization': 'Token ' + auth_token}
+        headers = {
+            'Authorization': 'Token ' + auth_token,
+            'User-Agent': 'seed-services-client v{0}'.format(client_version),
+        }
 
         if session is None:
             session = JSONServiceClient(url=api_url,

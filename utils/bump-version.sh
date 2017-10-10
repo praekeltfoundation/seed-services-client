@@ -17,4 +17,4 @@ function inplace_sed {
 }
 
 echo "${VER}" > VERSION
-inplace_sed "s/^\(__version__[ ]*=[ ]*[\"']\)\(.*\)\([\"'].*\)/\1${VER}\3/" seed_services_client/__init__.py
+inplace_sed "s/^\(__version__[ ]*=[ ]*[\"']\)\(.*\)\([\"'].*\)/\1${VER}\3/" seed_services_client/__version__.py

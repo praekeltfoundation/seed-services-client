@@ -1,3 +1,5 @@
+import responses
+
 from mock import patch
 from unittest import TestCase
 
@@ -43,3 +45,17 @@ class TestSeedServicesApiClient(TestCase):
             self.api.session.adapters['https://'].max_retries.total, 5)
         self.assertEqual(
             self.api.session.adapters['http://'].max_retries.total, 5)
+
+    @responses.activate
+    def test_user_agent_header_is_set(self):
+        responses.add(responses.GET, 'http://api/foo')
+
+        self.api = SeedServicesApiClient("token", "http://api/")
+        self.api.session.get('/foo')
+
+        user_agent_header = responses.calls[0].request.headers['User-Agent']
+
+        self.assertEqual(
+            user_agent_header.startswith('seed-services-client v'),
+            True
+        )
