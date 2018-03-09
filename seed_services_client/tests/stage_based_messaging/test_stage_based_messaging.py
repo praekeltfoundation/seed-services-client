@@ -508,3 +508,20 @@ class TestStageBasedMessagingClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://sbm.example.org/api/v1/subscriptions/")
+
+    @responses.activate
+    def test_resend_subscription(self):
+        subscription_id = "subscription1-4bf1-8779-c47b428e89d0"
+        response = {"accepted": True}
+
+        url = "http://sbm.example.org/api/v1/subscriptions/{}/resend".format(
+            subscription_id)
+
+        responses.add(responses.POST, url, json=response, status=202)
+
+        # Execute
+        result = self.api.resend_subscription(subscription_id)
+        # Check
+        self.assertEqual(result["accepted"], True)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url, url)

@@ -75,6 +75,9 @@ class StageBasedMessagingApiClient(SeedServicesApiClient):
     def create_subscription(self, subscription):
         return self.session.post('/subscriptions/', data=subscription)
 
+    def resend_subscription(self, subscription):
+        return self.session.post('/subscriptions/%s/resend' % subscription)
+
     def get_failed_tasks(self, params=None):
         return {"results": get_paginated_response(self.session,
                 '/failed-tasks/', params=params)}
