@@ -1,3 +1,5 @@
+import copy
+
 from demands import HTTPServiceClient, JSONServiceClient
 from requests.adapters import HTTPAdapter
 
@@ -53,12 +55,12 @@ class SeedServicesApiClient(object):
 
         if session is None:
             session = JSONServiceClient(url=api_url,
-                                        headers=headers)
+                                        headers=copy.deepcopy(headers))
         self.session = session
 
         if session_http is None:
             session_http = HTTPServiceClient(url=api_url,
-                                             headers=headers)
+                                             headers=copy.deepcopy(headers))
 
         self.session_http = session_http
 
