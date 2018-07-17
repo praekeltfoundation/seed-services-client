@@ -516,3 +516,71 @@ class TestControlInterfaceClient(TestCase):
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(responses.calls[0].request.url,
                          "http://ci.example.org/api/v1/definition/1/")
+
+    @responses.activate
+    def test_get_auditlogs_one_page(self):
+        # setup
+        search_response = {
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": "1",
+                    "identity_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+                    "subscription_id": "12121212-afaa-43de-acb1-09f61ad4de99",
+                    "action_at": "2016-08-03T19:39:26.464102Z",
+                    "action_by": 1,
+                    "action": "u",
+                    "action_name": "Update",
+                    "model": "subscription",
+                    "detail": "Language changed from eng_ZA to afr_ZA"
+                }
+            ]
+        }
+        qs = "?identity_id=846877e6-afaa-43de-acb1-09f61ad4de99"
+        responses.add(responses.GET,
+                      "http://ci.example.org/api/v1/auditlog/%s" % qs,
+                      json=search_response, status=200,
+                      match_querystring=True)
+        # Execute
+        result = self.api.get_auditlogs(params={
+            "identity_id": "846877e6-afaa-43de-acb1-09f61ad4de99"})
+        # Check
+        result1 = next(result["results"])
+        self.assertEqual(result1["action"], "u")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                        "http://ci.example.org/api/v1/auditlog/?identity_id=846877e6-afaa-43de-acb1-09f61ad4de99")  # noqa
+
+    @responses.activate
+    def test_create_auditlog(self):
+        # setup
+        post_response = {
+            "id": "1",
+            "identity_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+            "subscription_id": "12121212-afaa-43de-acb1-09f61ad4de99",
+            "action_at": "2016-08-03T19:39:26.464102Z",
+            "action_by": 1,
+            "action": "u",
+            "action_name": "Update",
+            "model": "subscription",
+            "detail": "Language changed from eng_ZA to afr_ZA"
+        }
+        responses.add(responses.POST,
+                      "http://ci.example.org/api/v1/auditlog/",
+                      json=post_response, status=201)
+        # Execute
+        change = {
+            "identity_id": "846877e6-afaa-43de-acb1-09f61ad4de99",
+            "subscription_id": "12121212-afaa-43de-acb1-09f61ad4de99",
+            "action": "u",
+            "action_by": 1,
+            "model": "subscription",
+            "detail": "Language changed from eng_ZA to afr_ZA"
+        }
+        result = self.api.create_auditlog(change)
+        # Check
+        self.assertEqual(result["action"], "u")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://ci.example.org/api/v1/auditlog/")

@@ -58,3 +58,13 @@ class ControlInterfaceApiClient(object):
 
     def get_definition_page(self, definition):
         return self.session.get('/definition/%s/' % definition)
+
+    def create_auditlog(self, auditlog):
+        return self.session.post('/auditlog/', data=auditlog)
+
+    def get_auditlogs(self, params=None):
+        """
+        Filter params can include 'identity_id', 'subscription_id'
+        """
+        return {"results": get_paginated_response(self.session, '/auditlog/',
+                params=params)}
