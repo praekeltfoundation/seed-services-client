@@ -629,5 +629,4 @@ class TestHubClient(TestCase):
         result = self.api.get_user_details()
 
         # Check
-        self.assertEqual(result, search_response
-        )
+        self.assertEqual(result, search_response)
