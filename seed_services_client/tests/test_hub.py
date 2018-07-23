@@ -597,3 +597,37 @@ class TestHubClient(TestCase):
                          "http://hub.example.org/api/v1/reporttasks/")
         self.assertEqual(responses.calls[1].request.url,
                          "http://hub.example.org/api/v1/reporttasks/?cursor=1")
+
+    @responses.activate
+    def test_get_user_details(self):
+        # setup
+        search_response = {
+            "has_next": False,
+            "has_previous": False,
+            "results": [
+                {
+                    "identity_id": "316e8bf5-091e-430f-a8af-665ba5bc9692",
+                    "msisdn": "+234123123123",
+                    "receiver_role": "mother",
+                    "validated": "true",
+                    "created_at": "20/07/18 08:14",
+                    "updated_at": "20/07/18 08:14",
+                    "state": "Ebonyi",
+                    "facility_name": "Chidera Health Clinic and Maternity",
+                    "linked_to_id": "1c79b593-78bf-4dd3-bc99-cc4e179c880f",
+                    "linked_to_msisdn": "+2347068430547",
+                    "linked_to_receiver_role": "father",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/user_details/",
+                      json=search_response, status=200,
+                      match_querystring=True)
+
+        # Execute
+        result = self.api.get_user_details()
+
+        # Check
+        self.assertEqual(result, search_response
+        )

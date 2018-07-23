@@ -72,3 +72,6 @@ class HubApiClient(object):
     def get_report_tasks(self, params=None):
         return {"results": get_paginated_response(self.session,
                 '/reporttasks/', params=params)}
+
+    def get_user_details(self, params=None):
+        return self.session.get('/user_details/', params=params)
