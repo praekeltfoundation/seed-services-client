@@ -75,3 +75,7 @@ class HubApiClient(object):
 
     def get_user_details(self, params=None):
         return self.session.get('/user_details/', params=params)
+
+    def get_states(self, params=None):
+        return {"results": get_paginated_response(self.session, '/states/',
+                params=params)}
