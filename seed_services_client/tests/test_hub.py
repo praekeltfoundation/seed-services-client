@@ -630,3 +630,33 @@ class TestHubClient(TestCase):
 
         # Check
         self.assertEqual(result, search_response)
+
+    @responses.activate
+    def test_get_states(self):
+        # setup
+        search_response = {
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": 1,
+                    "name": "Ebonyi",
+                    "created_at": "20/07/18 08:14",
+                    "updated_at": "20/07/18 08:14",
+                }
+            ]
+        }
+        responses.add(responses.GET,
+                      "http://hub.example.org/api/v1/states/",
+                      json=search_response, status=200,
+                      match_querystring=True)
+
+        # Execute
+        result = self.api.get_states()
+
+        # Check
+        result1 = next(result["results"])
+        self.assertEqual(result1["name"], "Ebonyi")
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url,
+                         "http://hub.example.org/api/v1/states/")
